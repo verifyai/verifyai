@@ -1,6 +1,6 @@
 import puppeteer, { type Page } from 'puppeteer';
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Auto-scroll function
 async function autoScroll(page: Page): Promise<void> {
@@ -28,13 +28,13 @@ async function scrapeProductData(url: string): Promise<any[]> {
   const page = await browser.newPage();
 
   try {
-    // Navigate to the given URL
+    // Navigate to the URL
     await page.goto(url, { waitUntil: 'networkidle2' });
 
     // Scroll to load dynamic content
     await autoScroll(page);
 
-    // Select potential product containers dynamically
+    // Evaluate and scrape data
     const products = await page.evaluate(() => {
       const possibleContainers = [
         '.product',
@@ -61,23 +61,34 @@ async function scrapeProductData(url: string): Promise<any[]> {
         const price =
           product.querySelector('[class*="price"], .amount, [data-price]')?.textContent?.trim() ||
           '';
-        const imageUrl = (product.querySelector('img') as HTMLImageElement)?.src || '';
+        const imageUrl =
+          product.querySelector('img')?.getAttribute('src') ||
+          product.querySelector('img')?.getAttribute('data-src') ||
+          product.querySelector('img')?.getAttribute('data-lazy-src') ||
+          '';
 
-        productData.push({
-          name,
-          price,
-          imageUrl,
-        });
+        if (name && price && imageUrl) {
+          productData.push({ name, price, imageUrl });
+        }
       });
 
-      return productData;
+      // De-duplicate products
+      const uniqueProducts = new Map();
+      productData.forEach((product) => {
+        const key = `${product.name}|${product.price}|${product.imageUrl}`;
+        if (!uniqueProducts.has(key)) {
+          uniqueProducts.set(key, product);
+        }
+      });
+
+      return Array.from(uniqueProducts.values());
     });
 
     if (!products.length) {
       console.log('No products found. Check the selectors or debug the page.');
     }
 
-    // Save data and take screenshots
+    // Save data
     const outputDir = path.resolve(__dirname, 'output');
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
@@ -88,31 +99,12 @@ async function scrapeProductData(url: string): Promise<any[]> {
     console.table(products);
     console.log(`\nProduct data saved to ${jsonFilePath}`);
 
-    for (let i = 0; i < products.length; i++) {
-      const product = products[i];
-      if (product.imageUrl) {
-        const screenshotPath = path.join(outputDir, `product_${i + 1}.png`);
-        await takeScreenshot(page, product.imageUrl, screenshotPath);
-        console.log(`Screenshot saved to ${screenshotPath}`);
-      }
-    }
-
     return products;
   } catch (error) {
     console.error('An error occurred while scraping:', error);
     return [];
   } finally {
     await browser.close();
-  }
-}
-
-// Screenshot function
-async function takeScreenshot(page: Page, imageUrl: string, filePath: string): Promise<void> {
-  try {
-    await page.goto(imageUrl, { waitUntil: 'networkidle2' });
-    await page.screenshot({ path: filePath });
-  } catch (error) {
-    console.error('Error taking screenshot:', error);
   }
 }
 
@@ -128,7 +120,11 @@ if (require.main === module) {
   }
 
   console.log(`Starting scraper for URL: ${url}`);
-  scrapeProductData(url).then(() => {
-    console.log('Scraping completed!');
-  });
+  scrapeProductData(url)
+    .then(() => {
+      console.log('Scraping completed!');
+    })
+    .catch((error) => {
+      console.error('Scraping failed:', error);
+    });
 }
