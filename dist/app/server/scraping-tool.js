@@ -44,7 +44,7 @@ async function autoScroll(page) {
     await page.evaluate(async () => {
         await new Promise((resolve) => {
             let totalHeight = 0;
-            const distance = 100; // Scroll distance
+            const distance = 100;
             const timer = setInterval(() => {
                 const scrollHeight = document.body.scrollHeight;
                 window.scrollBy(0, distance);
@@ -53,9 +53,13 @@ async function autoScroll(page) {
                     clearInterval(timer);
                     resolve();
                 }
-            }, 100); // Scroll every 100ms
+            }, 100);
         });
     });
+}
+// Function to clean data
+function cleanText(text) {
+    return text.replace(/\s+/g, ' ').replace(/\\n/g, '').trim();
 }
 // Scraper function
 async function scrapeProductData(url) {
@@ -68,32 +72,24 @@ async function scrapeProductData(url) {
         await autoScroll(page);
         // Evaluate and scrape data
         const products = await page.evaluate(() => {
-            const possibleContainers = [
-                '.product',
-                '.item',
-                '.product-container',
-                '[class*="product"]',
-                '[class*="item"]',
-            ];
-            let productElements = null;
-            for (const selector of possibleContainers) {
-                productElements = document.querySelectorAll(selector);
-                if (productElements.length > 0)
-                    break;
-            }
-            if (!productElements)
-                return [];
+            const productElements = document.querySelectorAll('.product, .item, .product-container, [class*="product"], [class*="item"]');
+            const excludeKeywords = ['login', 'sign up', 'logout', 'terms', 'privacy', 'careers', 'contact', 'gift card', 'faq', 'warranty'];
             const productData = [];
             productElements.forEach((product) => {
-                var _a, _b, _c, _d, _e, _f, _g;
-                const name = ((_b = (_a = product.querySelector('[class*="name"], [class*="title"], h2, h3')) === null || _a === void 0 ? void 0 : _a.textContent) === null || _b === void 0 ? void 0 : _b.trim()) ||
+                var _a, _b, _c, _d, _e;
+                let name = ((_a = product.querySelector('[class*="name"], [class*="title"], h2, h3')) === null || _a === void 0 ? void 0 : _a.textContent) || '';
+                let price = ((_b = product.querySelector('[class*="price"], .amount, [data-price]')) === null || _b === void 0 ? void 0 : _b.textContent) || '';
+                let imageUrl = ((_c = product.querySelector('img')) === null || _c === void 0 ? void 0 : _c.getAttribute('src')) ||
+                    ((_d = product.querySelector('img')) === null || _d === void 0 ? void 0 : _d.getAttribute('data-src')) ||
+                    ((_e = product.querySelector('img')) === null || _e === void 0 ? void 0 : _e.getAttribute('data-lazy-src')) ||
                     '';
-                const price = ((_d = (_c = product.querySelector('[class*="price"], .amount, [data-price]')) === null || _c === void 0 ? void 0 : _c.textContent) === null || _d === void 0 ? void 0 : _d.trim()) ||
-                    '';
-                const imageUrl = ((_e = product.querySelector('img')) === null || _e === void 0 ? void 0 : _e.getAttribute('src')) ||
-                    ((_f = product.querySelector('img')) === null || _f === void 0 ? void 0 : _f.getAttribute('data-src')) ||
-                    ((_g = product.querySelector('img')) === null || _g === void 0 ? void 0 : _g.getAttribute('data-lazy-src')) ||
-                    '';
+                // Clean data
+                name = name.trim().toLowerCase();
+                price = price.trim().toLowerCase();
+                // Skip unwanted products
+                if (excludeKeywords.some((keyword) => name.includes(keyword)))
+                    return;
+                // Add to product data if valid
                 if (name && price && imageUrl) {
                     productData.push({ name, price, imageUrl });
                 }
@@ -108,19 +104,25 @@ async function scrapeProductData(url) {
             });
             return Array.from(uniqueProducts.values());
         });
-        if (!products.length) {
-            console.log('No products found. Check the selectors or debug the page.');
-        }
+        // Retry failed crawls
+        if (!products.length)
+            throw new Error('No products found. Retrying...');
+        // Clean final data
+        const cleanedProducts = products.map((product) => ({
+            name: cleanText(product.name),
+            price: cleanText(product.price),
+            imageUrl: product.imageUrl,
+        }));
         // Save data
         const outputDir = path.resolve(__dirname, 'output');
         if (!fs.existsSync(outputDir))
             fs.mkdirSync(outputDir);
-        const jsonFilePath = path.join(outputDir, 'products.json');
-        fs.writeFileSync(jsonFilePath, JSON.stringify(products, null, 2));
+        const jsonFilePath = path.join(outputDir, 'products_cleaned.json');
+        fs.writeFileSync(jsonFilePath, JSON.stringify(cleanedProducts, null, 2));
         console.log('\n=== Scraped Product Data ===');
-        console.table(products);
+        console.table(cleanedProducts);
         console.log(`\nProduct data saved to ${jsonFilePath}`);
-        return products;
+        return cleanedProducts;
     }
     catch (error) {
         console.error('An error occurred while scraping:', error);
