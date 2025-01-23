@@ -5,6 +5,7 @@ import { useState } from 'react';
 export default function Home() {
   const [url, setUrl] = useState('');
   const [screenshot, setScreenshot] = useState('');
+  const [htmlContent, setHtmlContent] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -23,9 +24,11 @@ export default function Home() {
 
       const data = await response.json();
       setScreenshot(data.screenshot);
+      setHtmlContent(data.htmlContent);
       console.log('Screenshot:', data.screenshot);
+      console.log('HTML Content:', data.htmlContent);
     } catch (error) {
-      console.error('Error fetching screenshot:', error);
+      console.error('Error fetching screenshot and HTML content:', error);
     } finally {
       setLoading(false);
     }
@@ -51,12 +54,20 @@ export default function Home() {
           </button>
         </form>
         {loading && <div className="mt-8">Loading...</div>}
-        {screenshot && (
-          <div className="mt-8 p-4 border border-gray-300 rounded-md">
-            <h2 className="text-2xl font-bold">Screenshot:</h2>
-            <img src={`data:image/png;base64,${screenshot}`} alt="Screenshot" />
-          </div>
-        )}
+        <div className="flex-row mt-8 gap-5">
+          {screenshot && (
+            <div className="p-4 border border-gray-300 rounded-md">
+              <h2 className="text-2xl font-bold">Screenshot:</h2>
+              <img src={`data:image/png;base64,${screenshot}`} alt="Screenshot" />
+            </div>
+          )}
+          {htmlContent && (
+            <div className="p-4 border border-gray-300 rounded-md w-96">
+              <h2 className="text-2xl font-bold">HTML Content:</h2>
+              <pre className="whitespace-pre-wrap">{htmlContent}</pre>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -54,8 +54,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       encoding: 'base64',
     });
 
+    // Get the HTML content of the page
+    const htmlContent = await page.content();
+
     await browser.close();
-    res.status(200).json({ screenshot });
+    res.status(200).json({ screenshot, htmlContent });
   } catch (error) {
     console.error('Error scraping website:', error);
     res.status(500).json({ error: 'Error scraping website' });
