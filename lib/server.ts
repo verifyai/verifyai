@@ -1,8 +1,8 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 const app = express();
-import { scrape } from './middleware/sitemap-generator.js';
-import { analyzeUrls } from './middleware/open-ai.js';
+import { scrape } from './middleware/sitemap-generator';
+import { analyzeUrls } from './middleware/open-ai';
 
 // Enable CORS
 app.use(cors());
@@ -11,10 +11,10 @@ app.use(cors());
 app.use(express.json());
 
 // Define port
-const PORT = process.env.PORT || 3001;
+const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 
 // API endpoint for /api/run
-app.post('/api/run', scrape, analyzeUrls, (req, res) => {
+app.post('/api/run', scrape, analyzeUrls, (req: Request, res: Response) => {
   try {
     res.json({
       message: 'Request processed successfully',
@@ -22,7 +22,7 @@ app.post('/api/run', scrape, analyzeUrls, (req, res) => {
       analysis: res.locals.analysis,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 

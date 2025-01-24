@@ -7,13 +7,19 @@ interface ScrapedData {
   links: string[];
 }
 
-const scrape = async (req: Request, res: Response & { locals: { scrapedData: ScrapedData } }, next: NextFunction): Promise<void> => {
+interface ResponseLocals {
+  scrapedData: ScrapedData;
+  analysis: string;
+}
+
+const scrape = async (req: Request, res: Response & { locals: ResponseLocals }, next: NextFunction): Promise<void> => {
   try {
     // Get the request body
     const { url } = req.body;
 
     if (!url) {
-      return res.status(400).json({ error: 'URL is required' });
+      res.status(400).json({ error: 'URL is required' });
+      return;
     }
 
     // Fetch the HTML content
@@ -58,3 +64,4 @@ const scrape = async (req: Request, res: Response & { locals: { scrapedData: Scr
 };
 
 export { scrape };
+export type { ScrapedData, ResponseLocals };

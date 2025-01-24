@@ -2,13 +2,6 @@ import OpenAI from 'openai';
 import { Request, Response, NextFunction } from 'express';
 import 'dotenv/config';
 
-interface URLAnalysis {
-  homepage: string;
-  product: string;
-  checkout: string;
-  suspicious: string;
-}
-
 interface ScrapedData {
   links: string[];
 }
@@ -54,6 +47,10 @@ class OpenAIService {
           },
         ],
       });
+
+      if (!response?.choices[0]?.message?.content) {
+        throw new Error('No content returned from OpenAI');
+      }
 
       return response.choices[0].message.content;
     } catch (error) {
