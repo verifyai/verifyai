@@ -2,8 +2,15 @@
   "name": "verifyai",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
+<<<<<<< Updated upstream
     "dev": "next dev --turbopack",
+=======
+    "dev": "concurrently \"npm:frontend\" \"npm:backend\"",
+    "frontend": "next dev --port 3000 --turbopack",
+    "backend": "dotenvx run -- node lib/server.js",
+>>>>>>> Stashed changes
     "build": "next build",
     "start": "next start",
     "server": "dotenvx run -- node lib/server.js",
@@ -18,12 +25,15 @@
     "express": "^4.21.2",
     "next": "15.1.5",
     "openai": "^4.80.0",
+    "puppeteer": "^24.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/express": "^5.0.0",
     "@types/node": "^20",
+    "@types/puppeteer": "^7.0.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -31,6 +41,5 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
-  },
-  "type": "module"
+  }
 }
