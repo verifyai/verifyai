@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Arts/Crafts",
+    "alts": "hand design pottery glass paint paper"
+  },
+  {
+    "name": "Automotive",
+    "alts": "auto car truck suv van racing parts"
+  },
+  {
+    "name": "Bitcoin Mining Co-op",
+    "alts": "shares contracts union"
+  },
+  {
+    "name": "Broadcast Media",
+    "alts": "television tv studio radio"
+  },
+  {
+    "name": "Chemicals",
+    "alts": "research manufacturing industrial"
+  },
+  {
+    "name": "Consumer Goods",
+    "alts": "retail shop market products"
+  },
+  {
+    "name": "Consumer Services",
+    "alts": "undefined"
+  },
+  {
+    "name": "Cosmetics",
+    "alts": "make up bath body beauty hair skin care"
+  },
+  {
+    "name": "Facilities Services",
+    "alts": "cleaning janitorial maid"
+  },
+  {
+    "name": "Gambling/Casinos",
+    "alts": "club bar game buffet"
+  },
+  {
+    "name": "Government Administration",
+    "alts": "management state nation"
+  },
+  {
+    "name": "Insurance",
+    "alts": "undefined"
+  },
+  {
+    "name": "International Affairs",
+    "alts": "public relations consulting"
+  },
+  {
+    "name": "International Trade/Development",
+    "alts": "consulting"
+  },
+  {
+    "name": "Primary/Secondary Education",
+    "alts": "school grade teach"
+  },
+  {
+    "name": "Program Development",
+    "alts": "undefined"
+  },
+  {
+    "name": "Textiles",
+    "alts": "cloth cotton wool nylon polyester fabric"
+  },
+  {
+    "name": "Tobacco",
+    "alts": "cigar smoke nicotine"
+  },
+  {
+    "name": "Veterinary",
+    "alts": "animal pet grooming health medicine"
+  },
+  {
+    "name": "VPN/Hosting",
+    "alts": "webhosting vps proxy domain server"
+  },
+  {
+    "name": "Wholesale",
+    "alts": "warehouse drop shipping distribution"
+  },
+  {
+    "name": "Wireless",
+    "alts": "wifi internet hotspot router modem"
+  }
+]
