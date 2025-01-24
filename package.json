@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm:frontend\" \"npm:backend\"",
     "frontend": "next dev --port 3000 --turbopack",
-    "backend": "dotenvx run -- node dist/server.js",
+    "backend": "dotenvx run -- node dist/lib/server.js",
     "build": "next build",
     "build:backend": "tsc",
     "start": "next start",

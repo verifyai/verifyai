@@ -49,7 +49,7 @@ async function scrapeProductData(url: string): Promise<any[]> {
       productElements.forEach((product) => {
         let name = product.querySelector('[class*="name"], [class*="title"], h2, h3')?.textContent || '';
         let price = product.querySelector('[class*="price"], .amount, [data-price]')?.textContent || '';
-        let imageUrl =
+        const imageUrl =
           product.querySelector('img')?.getAttribute('src') ||
           product.querySelector('img')?.getAttribute('data-src') ||
           product.querySelector('img')?.getAttribute('data-lazy-src') ||
