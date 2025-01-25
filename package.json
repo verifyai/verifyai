@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "15.1.5",
+    "browser-image-compression": "^2.0.2",
+    "idb-keyval": "^6.2.1",
+    "next": "^15.1.6",
     "puppeteer": "^24.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
