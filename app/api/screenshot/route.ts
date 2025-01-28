@@ -2,17 +2,22 @@ import { NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
+import { broadcastAlert } from '@/app/lib/eventEmitter';
 
 export async function POST(req: Request) {
+  const body = await req.json();
+  const { url } = body;
   try {
-    // Parse the request body using req.json()
-    const body = await req.json();
-    const { url } = body;
-
     if (!url) {
       console.log('Error: No URL provided');
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
+
+    broadcastAlert({
+      type: 'started',
+      message: `Starting to scrape ${url}`,
+      timestamp: Date.now(),
+    });
 
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -21,6 +26,12 @@ export async function POST(req: Request) {
 
     // Navigate to the page and wait for initial load
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+    broadcastAlert({
+      type: 'pageLoaded',
+      message: `Page loaded: ${url}`,
+      timestamp: Date.now(),
+    });
 
     // Scroll to the bottom of the page to trigger lazy loading
     for (let i = 0; i < 2; i++) {
@@ -40,9 +51,22 @@ export async function POST(req: Request) {
           }, 100);
         });
       });
+
+      broadcastAlert({
+        type: 'scrolling',
+        message: `Scrolling down iteration ${i + 1}`,
+        timestamp: Date.now(),
+      });
+
       // Wait a bit before the next scroll
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
+
+    broadcastAlert({
+      type: 'scrollComplete',
+      message: `Scrolling completed for ${url}`,
+      timestamp: Date.now(),
+    });
 
     // Scroll back to the top of the page
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -57,6 +81,12 @@ export async function POST(req: Request) {
     const screenshot = await page.screenshot({
       fullPage: true,
       encoding: 'base64',
+    });
+
+    broadcastAlert({
+      type: 'screenshot',
+      message: `Screenshot taken for ${url}`,
+      timestamp: Date.now(),
     });
 
     // Create a directory for screenshots if it doesn't exist
@@ -75,11 +105,29 @@ export async function POST(req: Request) {
     fs.writeFileSync(filepath, buffer);
 
     await browser.close();
+
+    broadcastAlert({
+      type: 'completed',
+      message: `Scraping completed for ${url}`,
+      timestamp: Date.now(),
+    });
+
     return NextResponse.json({
       imageUrl: `/screenshots/${filename}`, // URL path to access the image
     });
   } catch (error) {
     console.error('Error scraping website:', error);
-    return NextResponse.json({ error: 'Error scraping website' }, { status: 500 });
+
+    broadcastAlert({
+      type: 'error',
+      message: `Error scraping ${url}: ${
+        error instanceof Error ? error.message : 'Error while sctraping website'
+      }`,
+      timestamp: Date.now(),
+    });
+    return NextResponse.json(
+      { error: 'Error scraping website' },
+      { status: 500 }
+    );
   }
 }
