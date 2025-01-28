@@ -53,7 +53,7 @@ export default function StartPage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col justify-center items-center bg-black">
+    <div className="w-full min-h-screen flex flex-col justify-center items-center">
       <div className="w-full max-w-md bg-white shadow-md rounded-lg overflow-hidden">
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Business Information</h2>

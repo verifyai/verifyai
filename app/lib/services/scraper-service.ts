@@ -1,9 +1,11 @@
 import puppeteer, { type Page } from 'puppeteer';
+import { ProductData } from "@/app/lib/types/product";
 
-export interface ScrapedProduct {
+interface ScrapedProduct extends ProductData {
   name: string;
   price: string;
   imageUrl: string;
+  [key: string]: string;  // Add index signature
 }
 
 export class ScraperService {
@@ -30,7 +32,7 @@ export class ScraperService {
     return text.replace(/\s+/g, ' ').replace(/\\n/g, '').trim();
   }
 
-  async scrapeProducts(url: string): Promise<ScrapedProduct[]> {
+  async scrapeProducts(url: string): Promise<ProductData[]> {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
 

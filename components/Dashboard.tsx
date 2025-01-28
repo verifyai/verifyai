@@ -26,7 +26,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-700 text-black">
+    <div className="flex flex-col items-center justify-center min-h-screen text-black">
       <div className="flex flex-row w-full max-w-6xl gap-4 p-6 bg-white shadow-lg rounded-xl">
         {/* Left Section */}
         <div className="flex-1 border rounded-lg p-4 bg-gray-100">
