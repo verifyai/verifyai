@@ -41,20 +41,23 @@ export default function RootLayout({
         <SidebarProvider>
           <Sidebar>
             <SidebarContent>
+              <div className="p-4">
+                <h1 className="text-xl font-bold">VerifyAI</h1>
+              </div>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <Link href="/" passHref legacyBehavior>
                     <SidebarMenuButton tooltip="Home">
-                      <Home className="h-5 w-5" />
-                      <span className="text-lg">Home</span>
+                      <Home className="h-10 w-10" />
+                      <span className="text-xl">Home</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <Link href="/dashboard" passHref legacyBehavior>
                     <SidebarMenuButton tooltip="Dashboard">
-                      <LayoutDashboard className="h-5 w-5" />
-                      <span className="text-lg">Dashboard</span>
+                      <LayoutDashboard className="h-10 w-10" />
+                      <span className="text-xl">Dashboard</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
