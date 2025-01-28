@@ -5,17 +5,7 @@ import {
 } from "@pinecone-database/pinecone";
 import { Request, Response, NextFunction } from "express";
 import "dotenv/config";
-
-interface ProductMetadata extends RecordMetadata {
-  name: string;
-  price: string;
-  imageUrl: string;
-}
-
-interface EmbeddingData {
-  product: ProductMetadata;
-  embedding: number[];
-}
+import { ProductData, ProductEmbedding } from "@/app/lib/types/product";
 
 export class PineconeService {
   private pinecone: Pinecone;
@@ -23,12 +13,12 @@ export class PineconeService {
 
   constructor() {
     this.pinecone = new Pinecone();
-    this.index = this.pinecone.index<ProductMetadata>("products");
+    this.index = this.pinecone.index<ProductData>("products");
   }
 
   private generatePineconeRecords(
-    embeddingsData: EmbeddingData[]
-  ): PineconeRecord<ProductMetadata>[] {
+    embeddingsData: ProductEmbedding[]
+  ): PineconeRecord<ProductData>[] {
     return embeddingsData.map(({ product, embedding }) => ({
       id: `${product.name}-${product.price}-${product.imageUrl}`,
       values: embedding,
@@ -37,17 +27,17 @@ export class PineconeService {
   }
 
   private createBatches(
-    vectors: PineconeRecord<ProductMetadata>[],
+    vectors: PineconeRecord<ProductData>[],
     batchSize = 100
-  ): PineconeRecord<ProductMetadata>[][] {
-    const batches: PineconeRecord<ProductMetadata>[][] = [];
+  ): PineconeRecord<ProductData>[][] {
+    const batches: PineconeRecord<ProductData>[][] = [];
     for (let i = 0; i < vectors.length; i += batchSize) {
       batches.push(vectors.slice(i, i + batchSize));
     }
     return batches;
   }
 
-  async upsertProducts(embeddingsData: EmbeddingData[]): Promise<void> {
+  async upsertProducts(embeddingsData: ProductEmbedding[]): Promise<void> {
     if (!embeddingsData?.length) {
       throw new Error("No embeddings data to upsert to Pinecone.");
     }
@@ -55,18 +45,14 @@ export class PineconeService {
     const pineconeRecords = this.generatePineconeRecords(embeddingsData);
     const batches = this.createBatches(pineconeRecords);
 
-    console.log(`Starting to upsert ${batches.length} batches to Pinecone.`);
-
     const results = await Promise.allSettled(
       batches.map(async (batch, i) => {
-        console.log(`Upserting batch ${i + 1}/${batches.length}`);
         return this.index.upsert(batch);
       })
     );
 
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
-        console.log(`Batch ${index + 1} upserted successfully.`);
       } else {
         console.error(`Failed to upsert batch ${index + 1}:`, result.reason);
       }
@@ -78,7 +64,7 @@ export class PineconeService {
    */
   async upsertProductsMiddleware(
     req: Request,
-    res: Response & { locals: { embeddingsData: EmbeddingData[] } },
+    res: Response & { locals: { embeddingsData: ProductEmbedding[] } },
     next: NextFunction
   ): Promise<void> {
     try {
@@ -93,8 +79,6 @@ export class PineconeService {
       }
 
       await this.upsertProducts(embeddingsData);
-
-      console.log("Successfully upserted all products to Pinecone.");
       next();
     } catch (error) {
       console.error("Error upserting products to Pinecone:", error);

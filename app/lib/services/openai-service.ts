@@ -1,23 +1,13 @@
+import { ProductData, ProductEmbedding } from "@/app/lib/types/product";
 import OpenAI from "openai";
 import { Request, Response, NextFunction } from "express";
+import "dotenv/config";
 
 interface URLAnalysis {
   homepage: string;
   product: string;
   checkout: string;
   suspicious: string;
-}
-
-interface ProductData {
-  name: string;
-  price: string;
-  imageUrl: string;
-}
-
-interface ProductEmbedding {
-  index: number;
-  product: ProductData;
-  embedding: number[];
 }
 
 interface ScrapedDataProduct {
@@ -51,7 +41,6 @@ export class OpenAIService {
             Provide only the JSON object, no additional explanation.`;
 
     try {
-      console.log("Analyzing URLs with OpenAI:", urls.join(", "));
       const response = await this.client.chat.completions.create({
         model: "gpt-4",
         messages: [
@@ -97,7 +86,6 @@ export class OpenAIService {
             embedding,
           });
         }
-        console.log(`Generated embedding ${i + 1}/${products.length}`);
       } catch (error) {
         console.error(`Error embedding product at index ${i}:`, error);
       }
