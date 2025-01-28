@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { Request, Response, NextFunction } from "express";
 
 interface URLAnalysis {
   homepage: string;
@@ -17,6 +18,10 @@ interface ProductEmbedding {
   index: number;
   product: ProductData;
   embedding: number[];
+}
+
+interface ScrapedDataProduct {
+  cleanedProducts: ProductData[];
 }
 
 export class OpenAIService {
@@ -101,6 +106,31 @@ export class OpenAIService {
     return embeddingsData;
   }
 }
+
+// Add the middleware at the end of the file, before the singleton export
+export const analyzeProduct = async (
+  req: Request,
+  res: Response & {
+    locals: { scrapedData: ScrapedDataProduct; analysis: ProductEmbedding[] };
+  },
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { cleanedProducts } = res.locals.scrapedData;
+
+    if (!cleanedProducts || !Array.isArray(cleanedProducts)) {
+      throw new Error("Invalid or missing product data.");
+    }
+
+    const analysis = await openAIService.embedProducts(cleanedProducts);
+
+    res.locals.analysis = analysis;
+    next();
+  } catch (error) {
+    console.error("Error analyzing products:", error);
+    res.status(500).json({ error: (error as Error).message });
+  }
+};
 
 // Export a singleton instance
 export const openAIService = new OpenAIService();

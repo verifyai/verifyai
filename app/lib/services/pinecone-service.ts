@@ -1,4 +1,10 @@
-import { Pinecone, PineconeRecord, RecordMetadata } from '@pinecone-database/pinecone';
+import {
+  Pinecone,
+  PineconeRecord,
+  RecordMetadata,
+} from "@pinecone-database/pinecone";
+import { Request, Response, NextFunction } from "express";
+import "dotenv/config";
 
 interface ProductMetadata extends RecordMetadata {
   name: string;
@@ -13,11 +19,11 @@ interface EmbeddingData {
 
 export class PineconeService {
   private pinecone: Pinecone;
-  private index: ReturnType<Pinecone['index']>;
+  private index: ReturnType<Pinecone["index"]>;
 
   constructor() {
     this.pinecone = new Pinecone();
-    this.index = this.pinecone.index<ProductMetadata>('products');
+    this.index = this.pinecone.index<ProductMetadata>("products");
   }
 
   private generatePineconeRecords(
@@ -43,7 +49,7 @@ export class PineconeService {
 
   async upsertProducts(embeddingsData: EmbeddingData[]): Promise<void> {
     if (!embeddingsData?.length) {
-      throw new Error('No embeddings data to upsert to Pinecone.');
+      throw new Error("No embeddings data to upsert to Pinecone.");
     }
 
     const pineconeRecords = this.generatePineconeRecords(embeddingsData);
@@ -59,13 +65,42 @@ export class PineconeService {
     );
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         console.log(`Batch ${index + 1} upserted successfully.`);
       } else {
         console.error(`Failed to upsert batch ${index + 1}:`, result.reason);
       }
     });
   }
+
+  /**
+   * Middleware to handle Pinecone upsertion.
+   */
+  async upsertProductsMiddleware(
+    req: Request,
+    res: Response & { locals: { embeddingsData: EmbeddingData[] } },
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { embeddingsData } = res.locals;
+
+      if (!embeddingsData || embeddingsData.length === 0) {
+        console.error("No embeddings data found for upsertion.");
+        res
+          .status(400)
+          .json({ error: "No embeddings data to upsert to Pinecone." });
+        return;
+      }
+
+      await this.upsertProducts(embeddingsData);
+
+      console.log("Successfully upserted all products to Pinecone.");
+      next();
+    } catch (error) {
+      console.error("Error upserting products to Pinecone:", error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  }
 }
 
-export const pineconeService = new PineconeService(); 
+export const pineconeService = new PineconeService();
