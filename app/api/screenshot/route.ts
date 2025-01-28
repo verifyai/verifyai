@@ -4,7 +4,6 @@ import fs from 'fs';
 import path from 'path';
 
 export async function POST(req: Request) {
-  console.log('Starting screenshot process...');
   try {
     // Parse the request body using req.json()
     const body = await req.json();
