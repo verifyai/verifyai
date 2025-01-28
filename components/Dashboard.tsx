@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { get } from 'idb-keyval';
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { get } from "idb-keyval";
 
 export default function Dashboard() {
-  const [screenshot, setScreenshot] = useState('');
-  const [htmlContent, setHtmlContent] = useState('');
-  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [screenshot, setScreenshot] = useState("");
+  const [htmlContent, setHtmlContent] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
   // Load screenshot from IndexedDB
   const loadScreenshot = async () => {
     try {
-      const storedScreenshot = await get('screenshot');
+      const storedScreenshot = await get("screenshot");
       if (storedScreenshot) setScreenshot(storedScreenshot);
     } catch (error) {
-      console.error('Error loading screenshot from IndexedDB:', error);
+      console.error("Error loading screenshot from IndexedDB:", error);
     }
   };
 
@@ -23,19 +23,21 @@ export default function Dashboard() {
     // Fetch screenshot and HTML content on component mount
     loadScreenshot();
 
-    const storedHtmlContent = localStorage.getItem('htmlContent');
+    const storedHtmlContent = localStorage.getItem("htmlContent");
     if (storedHtmlContent) setHtmlContent(storedHtmlContent);
 
-    const storedWebsiteUrl = localStorage.getItem('websiteUrl'); // Fetch website URL from localStorage
+    const storedWebsiteUrl = localStorage.getItem("websiteUrl"); // Fetch website URL from localStorage
     if (storedWebsiteUrl) setWebsiteUrl(storedWebsiteUrl);
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-700 text-black">
+    <div className="flex flex-col items-center justify-center min-h-screen text-black">
       <div className="flex flex-row w-full max-w-6xl gap-4 p-6 bg-white shadow-lg rounded-xl">
         {/* Left Section */}
         <div className="flex-1 border rounded-lg p-4 bg-gray-100">
-          <h2 className="text-xl font-semibold text-center mb-4 text-black">Website Preview</h2>
+          <h2 className="text-xl font-semibold text-center mb-4 text-black">
+            Website Preview
+          </h2>
           <div className="h-[400px] w-full bg-white border-dashed border-2 border-gray-300 rounded-lg overflow-hidden relative">
             {screenshot ? (
               <div className="h-full w-full overflow-y-scroll">
@@ -62,7 +64,7 @@ export default function Dashboard() {
           <div className="p-4 border rounded-lg bg-gray-100">
             <h3 className="text-lg font-semibold mb-2">Website Details</h3>
             <p className="text-sm">
-              <span className="font-medium">Website URL:</span>{' '}
+              <span className="font-medium">Website URL:</span>{" "}
               {websiteUrl && (
                 <a
                   href={websiteUrl}
@@ -106,7 +108,12 @@ export default function Dashboard() {
           <div className="p-4 border rounded-lg bg-gray-100">
             <h3 className="text-lg font-semibold mb-4">Confidence Score</h3>
             <div className="space-y-3">
-              {['Ownership', 'Certificates', 'Restrictions', 'Product Page'].map((item) => (
+              {[
+                "Ownership",
+                "Certificates",
+                "Restrictions",
+                "Product Page",
+              ].map((item) => (
                 <div key={item}>
                   <div className="flex justify-between text-sm mb-1">
                     <span>{item}</span>
