@@ -36,6 +36,19 @@ export default function StartPage() {
         body: JSON.stringify({ url: formData.url }),
       })
 
+      try {
+        const rest = await fetch("/api/restricted", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          // body: JSON.stringify({ url: formData.url }),
+        })
+        console.log(rest)
+      } catch (error) {
+        console.error("Error fetching restricted items:", error)
+      }
+      
       const data = await response.json()
 
       // Save screenshot and website URL in IndexedDB

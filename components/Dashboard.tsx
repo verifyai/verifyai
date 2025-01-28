@@ -8,7 +8,7 @@ export default function Dashboard() {
   const [screenshot, setScreenshot] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
-
+  console.log(htmlContent);
   // Load screenshot from IndexedDB
   const loadScreenshot = async () => {
     try {
