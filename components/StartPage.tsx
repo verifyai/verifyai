@@ -1,24 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { set } from "idb-keyval";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function StartPage() {
   const [formData, setFormData] = useState({
-    businessName: "",
-    url: "",
-    industry: "",
-    description: "",
+    businessName: '',
+    url: '',
+    industry: '',
+    description: '',
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -28,33 +23,30 @@ export default function StartPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitted data:", formData);
+    console.log('Submitted data:', formData);
     setLoading(true);
 
     try {
-      const response = await fetch("/api/screenshot", {
-        method: "POST",
+      const response = await fetch('/api/screenshot', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ url: formData.url }),
       });
 
       const data = await response.json();
 
-      // Save screenshot and website URL in IndexedDB
-      await set("screenshot", data.screenshot);
-      localStorage.setItem("htmlContent", data.htmlContent);
-      localStorage.setItem("websiteUrl", formData.url);
+      // Save form data in localStorage
+      localStorage.setItem('websiteUrl', formData.url);
+      localStorage.setItem('screenshotUrl', data.imageUrl);
+      localStorage.setItem('businessName', formData.businessName);
+      localStorage.setItem('industry', formData.industry);
+      localStorage.setItem('description', formData.description);
 
-      // Save other form data in localStorage
-      localStorage.setItem("businessName", formData.businessName);
-      localStorage.setItem("industry", formData.industry);
-      localStorage.setItem("description", formData.description);
-
-      router.push("/dashboard");
+      router.push('/dashboard');
     } catch (error) {
-      console.error("Error fetching screenshot and HTML content:", error);
+      console.error('Error fetching screenshot and HTML content:', error);
     } finally {
       setLoading(false);
     }
@@ -64,18 +56,11 @@ export default function StartPage() {
     <div className="w-full min-h-screen flex flex-col justify-center items-center">
       <div className="w-full max-w-md bg-white shadow-md rounded-lg overflow-hidden">
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Business Information
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Enter your business details below
-          </p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Business Information</h2>
+          <p className="text-gray-600 mb-6">Enter your business details below</p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="businessName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-1">
                 Business Name
               </label>
               <input
@@ -90,10 +75,7 @@ export default function StartPage() {
               />
             </div>
             <div>
-              <label
-                htmlFor="url"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
                 Website URL
               </label>
               <input
@@ -108,10 +90,7 @@ export default function StartPage() {
               />
             </div>
             <div>
-              <label
-                htmlFor="industry"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">
                 Website Industry
               </label>
               <select
@@ -131,10 +110,7 @@ export default function StartPage() {
               </select>
             </div>
             <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Short Description
               </label>
               <textarea
@@ -153,7 +129,7 @@ export default function StartPage() {
               disabled={loading}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Loading..." : "Submit"}
+              {loading ? 'Loading...' : 'Submit'}
             </button>
           </form>
         </div>
