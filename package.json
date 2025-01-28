@@ -26,13 +26,10 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "idb-keyval": "^6.2.1",
-<<<<<<< HEAD
-=======
     "lucide-react": "^0.473.0",
     "next": "^15.1.6",
     "openai": "^4.80.0",
     "puppeteer": "^24.1.0",
->>>>>>> main
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^2.6.0",
