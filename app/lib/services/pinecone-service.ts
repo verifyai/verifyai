@@ -45,18 +45,14 @@ export class PineconeService {
     const pineconeRecords = this.generatePineconeRecords(embeddingsData);
     const batches = this.createBatches(pineconeRecords);
 
-    console.log(`Starting to upsert ${batches.length} batches to Pinecone.`);
-
     const results = await Promise.allSettled(
       batches.map(async (batch, i) => {
-        console.log(`Upserting batch ${i + 1}/${batches.length}`);
         return this.index.upsert(batch);
       })
     );
 
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
-        console.log(`Batch ${index + 1} upserted successfully.`);
       } else {
         console.error(`Failed to upsert batch ${index + 1}:`, result.reason);
       }
@@ -83,8 +79,6 @@ export class PineconeService {
       }
 
       await this.upsertProducts(embeddingsData);
-
-      console.log("Successfully upserted all products to Pinecone.");
       next();
     } catch (error) {
       console.error("Error upserting products to Pinecone:", error);

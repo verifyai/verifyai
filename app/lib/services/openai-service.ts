@@ -41,7 +41,6 @@ export class OpenAIService {
             Provide only the JSON object, no additional explanation.`;
 
     try {
-      console.log("Analyzing URLs with OpenAI:", urls.join(", "));
       const response = await this.client.chat.completions.create({
         model: "gpt-4",
         messages: [
@@ -87,7 +86,6 @@ export class OpenAIService {
             embedding,
           });
         }
-        console.log(`Generated embedding ${i + 1}/${products.length}`);
       } catch (error) {
         console.error(`Error embedding product at index ${i}:`, error);
       }

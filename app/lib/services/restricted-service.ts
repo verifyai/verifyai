@@ -45,7 +45,6 @@ class OpenAIServiceRestrictedItems {
         const embedding = response.data[0]?.embedding;
         if (embedding) {
           embeddingsData.push({ item, embedding });
-          console.log(`Generated embedding for restricted item ${i + 1}/${items.length}`);
         }
       } catch (error) {
         console.error(`Error embedding restricted item at index ${i}:`, error);
@@ -90,18 +89,15 @@ const upsertBatchesToPinecone = async (
   pineconeBatches: PineconeRecord<RestrictedItem>[][],
   index: ReturnType<typeof pinecone.index>
 ): Promise<void> => {
-  console.log(`Starting to upsert ${pineconeBatches.length} batches of restricted items.`);
 
   const upsertResults = await Promise.allSettled(
     pineconeBatches.map(async (batch, i) => {
-      console.log(`Upserting restricted batch ${i + 1}/${pineconeBatches.length}`);
       return index.upsert(batch);
     })
   );
 
   upsertResults.forEach((result, i) => {
     if (result.status === 'fulfilled') {
-      console.log(`Batch ${i + 1} upserted successfully.`);
     } else {
       console.error(`Failed to upsert batch ${i + 1}:`, result.reason);
     }
@@ -142,8 +138,7 @@ export const processRestrictedItems = async (req: NextRequest) => {
     // Batch and upsert into Pinecone
     const batches = createPineconeBatches(pineconeRecords);
     await upsertBatchesToPinecone(batches, restrictedIndex);
-
-    console.log('Restricted items processed successfully.');
+    
     return restrictedItems;
   } catch (error) {
     console.error('Error processing restricted items:', error);
