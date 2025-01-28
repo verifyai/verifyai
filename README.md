@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**A note to Will**
 
-## Getting Started
+Hey Will! Thanks for taking a look at our project. The project isn't a working MVP at this point, we spent the first day with each team member doing discovery on a different path forward to arrive at our current MVP and strech goals. We have parts of the whole at this point but haven't combined them together.
 
-First, run the development server:
+# Project Brief
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**1. What is the problem you’re solving?**
+* Checking merchant websites as part of compliance onboarding is a manual and time consuming
+* Product in few words: AI assistance for compliance officers to validate merchant websites
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**2. What is the solution?**
+Web scraping to collect relevant information from merchant websites.
+AI-powered analysis to verify legitimacy and product offerings.
+Scoring system to compare automated results with human evaluations.
+Actionable recommendations to assist compliance officers.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**3. What is the MVP scope? (core features you must get working)**
+Scrape website for legitimacy
+Verify ownership of website belongs to specified merchant 
+Verify products are being sold
+Verify restricted products are not being sold (blind for human until human verification given)
 
-## Learn More
+**4. What are the tough technical challenges involved with solving this problem?**
+Getting the AI to successfully grab relevant information from the websites
+Getting AI to generate confidence score 
 
-To learn more about Next.js, take a look at the following resources:
+**5. What are the stretch goals?**
+Give verification score to compare with human score 
+Recommend 3rd party internal verification
+Host on cloud
+Make Millions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**6. What is the technology stack?**
+Next.js (FE + BE), Typescript, Supabase Postgres, OpenAI API, 
+Team Responsibility breakdown: Who’s working on which part?
+Tanner Lyon - FE/BE
+Jesse Chou - FE/BE
+Kiril Christov - FE/BE
+Taven Shumaker - FE/BE
+Ian Mann - FE/BE
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Diagrams
 
-## Deploy on Vercel
+## MVP Goal:
+![image](https://github.com/user-attachments/assets/c07997d0-9f88-45cb-8edd-44ea56f47773)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Strech Goals:
+![image](https://github.com/user-attachments/assets/23898b76-f0e7-47bf-be81-3b1d98667ed0)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+![image](https://github.com/user-attachments/assets/e210ec3b-de5c-4bf9-bf05-1029f5b62e19)
