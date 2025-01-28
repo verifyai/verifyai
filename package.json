@@ -4,9 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm:frontend\" \"npm:backend\"",
-    "frontend": "next dev --port 3000 --turbopack",
-    "backend": "dotenvx run -- node lib/server.js",
+    "dev": "next dev --port 3000 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -29,8 +27,6 @@
     "puppeteer": "^24.1.0",
     "browser-image-compression": "^2.0.2",
     "idb-keyval": "^6.2.1",
-    "next": "^15.1.6",
-    "puppeteer": "^24.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^2.6.0",

@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { set } from "idb-keyval"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { set } from "idb-keyval";
 
 export default function StartPage() {
   const [formData, setFormData] = useState({
@@ -10,74 +10,72 @@ export default function StartPage() {
     url: "",
     industry: "",
     description: "",
-  })
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  });
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Submitted data:", formData)
-    setLoading(true)
+    e.preventDefault();
+    console.log("Submitted data:", formData);
+    setLoading(true);
 
     try {
-      const response = await fetch("/api/scrape", {
+      const response = await fetch("/api/screenshot", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ url: formData.url }),
-      })
+      });
 
-      try {
-        const rest = await fetch("/api/restricted", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // body: JSON.stringify({ url: formData.url }),
-        })
-        console.log(rest)
-      } catch (error) {
-        console.error("Error fetching restricted items:", error)
-      }
-      
-      const data = await response.json()
+      const data = await response.json();
 
       // Save screenshot and website URL in IndexedDB
-      await set("screenshot", data.screenshot)
-      localStorage.setItem("htmlContent", data.htmlContent)
-      localStorage.setItem("websiteUrl", formData.url)
+      await set("screenshot", data.screenshot);
+      localStorage.setItem("htmlContent", data.htmlContent);
+      localStorage.setItem("websiteUrl", formData.url);
 
       // Save other form data in localStorage
-      localStorage.setItem("businessName", formData.businessName)
-      localStorage.setItem("industry", formData.industry)
-      localStorage.setItem("description", formData.description)
+      localStorage.setItem("businessName", formData.businessName);
+      localStorage.setItem("industry", formData.industry);
+      localStorage.setItem("description", formData.description);
 
-      router.push("/dashboard")
+      router.push("/dashboard");
     } catch (error) {
-      console.error("Error fetching screenshot and HTML content:", error)
+      console.error("Error fetching screenshot and HTML content:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center bg-black">
       <div className="w-full max-w-md bg-white shadow-md rounded-lg overflow-hidden">
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Business Information</h2>
-          <p className="text-gray-600 mb-6">Enter your business details below</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Business Information
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Enter your business details below
+          </p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="businessName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Business Name
               </label>
               <input
@@ -92,7 +90,10 @@ export default function StartPage() {
               />
             </div>
             <div>
-              <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="url"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Website URL
               </label>
               <input
@@ -107,7 +108,10 @@ export default function StartPage() {
               />
             </div>
             <div>
-              <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="industry"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Website Industry
               </label>
               <select
@@ -127,7 +131,10 @@ export default function StartPage() {
               </select>
             </div>
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Short Description
               </label>
               <textarea
@@ -158,5 +165,5 @@ export default function StartPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

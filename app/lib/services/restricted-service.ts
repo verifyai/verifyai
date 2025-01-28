@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { Pinecone, PineconeRecord, RecordMetadata } from '@pinecone-database/pinecone';
 import { Request, Response, NextFunction } from 'express';
 import 'dotenv/config';
+import { NextRequest } from "next/server";
 
 interface RestrictedItem extends RecordMetadata {
   category: string;
@@ -110,12 +111,8 @@ const upsertBatchesToPinecone = async (
 /**
  * Combined middleware to process restricted items.
  */
-export const processRestrictedItems = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  const restrictedItems: RestrictedItem[] = [
+export const processRestrictedItems = async (req: NextRequest) => {
+  const restrictedItems = [
     { category: 'Drugs', description: 'Drugs and drug paraphernalia' },
     { category: 'Marijuana', description: 'Marijuana dispensaries and related products' },
     { category: 'Weapons', description: 'Weapons, munitions, gunpowder, and explosives' },
@@ -147,9 +144,13 @@ export const processRestrictedItems = async (
     await upsertBatchesToPinecone(batches, restrictedIndex);
 
     console.log('Restricted items processed successfully.');
-    next();
+    return restrictedItems;
   } catch (error) {
     console.error('Error processing restricted items:', error);
-    res.status(500).json({ error: (error as Error).message });
+    return { error: (error as Error).message };
   }
+};
+
+export const restrictedService = {
+  processRestrictedItems
 };
