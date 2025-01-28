@@ -1,24 +1,27 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import puppeteer from "puppeteer";
+import { NextResponse } from 'next/server';
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const { url } = req.body;
-
-  if (!url) {
-    return res.status(400).json({ error: "URL is required" });
-  }
-
+export async function POST(req: Request) {
+  console.log('Starting screenshot process...');
   try {
+    // Parse the request body using req.json()
+    const body = await req.json();
+    const { url } = body;
+
+    if (!url) {
+      console.log('Error: No URL provided');
+      return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+    }
+
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
 
     // Navigate to the page and wait for initial load
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
     // Scroll to the bottom of the page to trigger lazy loading
     for (let i = 0; i < 2; i++) {
@@ -46,7 +49,7 @@ export default async function handler(
     await page.evaluate(() => window.scrollTo(0, 0));
 
     // Wait for the content to load (use a broad selector or function for reliability)
-    await page.waitForSelector("body", { timeout: 120000 });
+    await page.waitForSelector('body', { timeout: 120000 });
 
     // Optional: Add an extra delay
     await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -54,16 +57,30 @@ export default async function handler(
     // Take a full-page screenshot
     const screenshot = await page.screenshot({
       fullPage: true,
-      encoding: "base64",
+      encoding: 'base64',
     });
 
-    // Get the HTML content of the page
-    const htmlContent = await page.content();
+    // Create a directory for screenshots if it doesn't exist
+    const screenshotsDir = path.join(process.cwd(), 'public', 'screenshots');
+    if (!fs.existsSync(screenshotsDir)) {
+      fs.mkdirSync(screenshotsDir, { recursive: true });
+    }
+
+    // Generate filename with timestamp
+    const timestamp = Date.now();
+    const filename = `screenshot-${timestamp}.png`;
+    const filepath = path.join(screenshotsDir, filename);
+
+    // Convert base64 to buffer and save
+    const buffer = Buffer.from(screenshot, 'base64');
+    fs.writeFileSync(filepath, buffer);
 
     await browser.close();
-    res.status(200).json({ screenshot, htmlContent });
+    return NextResponse.json({
+      imageUrl: `/screenshots/${filename}`, // URL path to access the image
+    });
   } catch (error) {
-    console.error("Error scraping website:", error);
-    res.status(500).json({ error: "Error scraping website" });
+    console.error('Error scraping website:', error);
+    return NextResponse.json({ error: 'Error scraping website' }, { status: 500 });
   }
 }
