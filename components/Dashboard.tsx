@@ -4,25 +4,73 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 export default function Dashboard() {
-  const [screenshotUrl, setScreenshotUrl] = useState('');
-  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [screenshotUrl] = useState(window.localStorage.getItem('screenshotUrl'));
+  const [websiteUrl] = useState(window.localStorage.getItem('websiteUrl'));
 
-  // Load screenshot from IndexedDB
-  const loadScreenshot = async () => {
+  const initializeEventsource = async () => {
+    const eventSource = new EventSource('/api/alerts');
+
+    eventSource.onmessage = (event) => {
+      const alertData = JSON.parse(event.data);
+
+      // TODO: handle the logic for each alert type
+      // Update progress indicators based on alert type
+      if (alertData.type === 'scanning') {
+        console.log(alertData.type, alertData.message);
+        // Update scanning progress
+      } else if (alertData.type === 'restrictions') {
+        // Update restrictions progress
+      }
+      // ... handle other alert types
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('EventSource failed:', error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  };
+
+  const startWebsiteAnalysis = async () => {
     try {
-      const storedScreenshot = localStorage.getItem('screenshotUrl');
-      if (storedScreenshot) setScreenshotUrl(storedScreenshot);
+      const businessName = localStorage.getItem('businessName') || '';
+      const description = localStorage.getItem('description') || '';
+      const industry = localStorage.getItem('industry') || '';
+
+      const response = await fetch('/api/run', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          websiteUrl,
+          businessName,
+          industry,
+          description,
+          screenshotUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze screenshot');
+      }
+
+      const data = await response.json();
+      // TODO: UPDATE THE UI WITH RESPONSE FROM DATA ANALYSIS
+      console.log('Analysis completed:', data);
     } catch (error) {
-      console.error('Error loading screenshot from IndexedDB:', error);
+      console.error('Error analyzing screenshot:', error);
     }
   };
 
   useEffect(() => {
-    // Fetch screenshot and HTML content on component mount
-    loadScreenshot();
-
-    const storedWebsiteUrl = localStorage.getItem('websiteUrl'); // Fetch website URL from localStorage
-    if (storedWebsiteUrl) setWebsiteUrl(storedWebsiteUrl);
+    // initialize the event source
+    initializeEventsource();
+    // start the website analysis
+    startWebsiteAnalysis();
   }, []);
 
   return (
