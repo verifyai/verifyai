@@ -1,8 +1,10 @@
-import OpenAI from 'openai';
-import { Pinecone, PineconeRecord, RecordMetadata } from '@pinecone-database/pinecone';
-import { Request, Response, NextFunction } from 'express';
-import 'dotenv/config';
-import { NextRequest } from "next/server";
+import OpenAI from "openai";
+import {
+  Pinecone,
+  PineconeRecord,
+  RecordMetadata,
+} from "@pinecone-database/pinecone";
+import "dotenv/config";
 
 interface RestrictedItem extends RecordMetadata {
   category: string;
@@ -16,7 +18,7 @@ interface EmbeddingData {
 }
 
 const pinecone = new Pinecone();
-const restrictedIndex = pinecone.index<RestrictedItem>('restricted-items'); // Dedicated index for restricted items
+const restrictedIndex = pinecone.index<RestrictedItem>("restricted-items"); // Dedicated index for restricted items
 
 class OpenAIServiceRestrictedItems {
   private client: OpenAI;
@@ -30,7 +32,9 @@ class OpenAIServiceRestrictedItems {
   /**
    * Embed restricted items using OpenAI's embedding model.
    */
-  async embedRestrictedItems(items: RestrictedItem[]): Promise<EmbeddingData[]> {
+  async embedRestrictedItems(
+    items: RestrictedItem[]
+  ): Promise<EmbeddingData[]> {
     const embeddingsData: EmbeddingData[] = [];
 
     for (let i = 0; i < items.length; i++) {
@@ -38,7 +42,7 @@ class OpenAIServiceRestrictedItems {
       try {
         const inputText = `${item.category}: ${item.description}`;
         const response = await this.client.embeddings.create({
-          model: 'text-embedding-ada-002', // OpenAI embedding model
+          model: "text-embedding-ada-002", // OpenAI embedding model
           input: inputText,
         });
 
@@ -89,15 +93,14 @@ const upsertBatchesToPinecone = async (
   pineconeBatches: PineconeRecord<RestrictedItem>[][],
   index: ReturnType<typeof pinecone.index>
 ): Promise<void> => {
-
   const upsertResults = await Promise.allSettled(
-    pineconeBatches.map(async (batch, i) => {
+    pineconeBatches.map(async (batch) => {
       return index.upsert(batch);
     })
   );
 
   upsertResults.forEach((result, i) => {
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
     } else {
       console.error(`Failed to upsert batch ${i + 1}:`, result.reason);
     }
@@ -107,18 +110,45 @@ const upsertBatchesToPinecone = async (
 /**
  * Combined middleware to process restricted items.
  */
-export const processRestrictedItems = async (req: NextRequest) => {
+export const processRestrictedItems = async () => {
   const restrictedItems = [
-    { category: 'Drugs', description: 'Drugs and drug paraphernalia' },
-    { category: 'Marijuana', description: 'Marijuana dispensaries and related products' },
-    { category: 'Weapons', description: 'Weapons, munitions, gunpowder, and explosives' },
-    { category: 'Toxic Materials', description: 'Toxic, flammable, and radioactive materials' },
-    { category: 'Pseudo-Pharmaceuticals', description: 'Products mimicking drugs or pharmaceuticals' },
-    { category: 'Explicit Content', description: 'Sexually explicit content and services' },
-    { category: 'Pyramid Schemes', description: 'Unfair, predatory, or deceptive practices' },
-    { category: 'Speculative Items', description: 'Items used for speculation or hedging' },
-    { category: 'Gambling', description: 'Casino games, sports betting, and lotteries' },
-    { category: 'Cryptocurrencies', description: 'Sale or trade of cryptocurrencies' },
+    { category: "Drugs", description: "Drugs and drug paraphernalia" },
+    {
+      category: "Marijuana",
+      description: "Marijuana dispensaries and related products",
+    },
+    {
+      category: "Weapons",
+      description: "Weapons, munitions, gunpowder, and explosives",
+    },
+    {
+      category: "Toxic Materials",
+      description: "Toxic, flammable, and radioactive materials",
+    },
+    {
+      category: "Pseudo-Pharmaceuticals",
+      description: "Products mimicking drugs or pharmaceuticals",
+    },
+    {
+      category: "Explicit Content",
+      description: "Sexually explicit content and services",
+    },
+    {
+      category: "Pyramid Schemes",
+      description: "Unfair, predatory, or deceptive practices",
+    },
+    {
+      category: "Speculative Items",
+      description: "Items used for speculation or hedging",
+    },
+    {
+      category: "Gambling",
+      description: "Casino games, sports betting, and lotteries",
+    },
+    {
+      category: "Cryptocurrencies",
+      description: "Sale or trade of cryptocurrencies",
+    },
     // Add other restricted items or businesses as needed
   ];
 
@@ -126,10 +156,12 @@ export const processRestrictedItems = async (req: NextRequest) => {
     const openAIService = new OpenAIServiceRestrictedItems();
 
     // Generate embeddings for restricted items
-    const embeddingsData = await openAIService.embedRestrictedItems(restrictedItems);
+    const embeddingsData = await openAIService.embedRestrictedItems(
+      restrictedItems
+    );
 
     if (!embeddingsData || embeddingsData.length === 0) {
-      throw new Error('No embeddings were generated for restricted items.');
+      throw new Error("No embeddings were generated for restricted items.");
     }
 
     // Generate Pinecone records
@@ -138,14 +170,14 @@ export const processRestrictedItems = async (req: NextRequest) => {
     // Batch and upsert into Pinecone
     const batches = createPineconeBatches(pineconeRecords);
     await upsertBatchesToPinecone(batches, restrictedIndex);
-    
+
     return restrictedItems;
   } catch (error) {
-    console.error('Error processing restricted items:', error);
+    console.error("Error processing restricted items:", error);
     return { error: (error as Error).message };
   }
 };
 
 export const restrictedService = {
-  processRestrictedItems
+  processRestrictedItems,
 };
