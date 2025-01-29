@@ -2,33 +2,88 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { get } from "idb-keyval";
+import { get, set } from "idb-keyval";
 
 export default function Dashboard() {
-  const [screenshot, setScreenshot] = useState("");
+  const [screenshot, setScreenshotState] = useState("");
   const [htmlContent, setHtmlContent] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [analysis, setAnalysis] = useState(null);
+  const [loadingScreenshot, setLoadingScreenshot] = useState(false);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
-  // Load screenshot from IndexedDB
-  const loadScreenshot = async () => {
+  const fetchScreenshot = async () => {
+    setLoadingScreenshot(true);
     try {
-      const storedScreenshot = await get("screenshot");
-      if (storedScreenshot) setScreenshot(storedScreenshot);
+      const response = await fetch("/api/screenshot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: websiteUrl }),
+      });
+
+      const data = await response.json();
+      if (data.screenshot) {
+        setScreenshotState(data.screenshot);
+        setHtmlContent(data.htmlContent);
+
+        // Save screenshot in IndexedDB for persistence
+        await set("screenshot", data.screenshot);
+        await set("htmlContent", data.htmlContent);
+      }
     } catch (error) {
-      console.error("Error loading screenshot from IndexedDB:", error);
+      console.error("Error fetching screenshot:", error);
+    } finally {
+      setLoadingScreenshot(false);
+    }
+  };
+
+  const analyzeScreenshot = async () => {
+    setLoadingAnalysis(true);
+    try {
+      const response = await fetch("/api/analyze-screenshot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ screenshot }),
+      });
+
+      const data = await response.json();
+      if (data.analysis) {
+        setAnalysis(data.analysis);
+      }
+    } catch (error) {
+      console.error("Error analyzing screenshot:", error);
+    } finally {
+      setLoadingAnalysis(false);
     }
   };
 
   useEffect(() => {
-    // Fetch screenshot and HTML content on component mount
+    // Load existing screenshot from IndexedDB
+    const loadScreenshot = async () => {
+      const storedScreenshot = await get("screenshot");
+      const storedHtmlContent = await get("htmlContent");
+
+      if (storedScreenshot) {
+        setScreenshotState(storedScreenshot);
+        setHtmlContent(storedHtmlContent || "");
+      } else {
+        fetchScreenshot(); // Fetch screenshot if not available
+      }
+    };
+
     loadScreenshot();
-
-    const storedHtmlContent = localStorage.getItem("htmlContent");
-    if (storedHtmlContent) setHtmlContent(storedHtmlContent);
-
-    const storedWebsiteUrl = localStorage.getItem("websiteUrl"); // Fetch website URL from localStorage
-    if (storedWebsiteUrl) setWebsiteUrl(storedWebsiteUrl);
   }, []);
+
+  // Trigger analysis when screenshot is loaded
+  useEffect(() => {
+    if (screenshot) {
+      analyzeScreenshot();
+    }
+  }, [screenshot]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-black">
@@ -103,6 +158,20 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Analysis Section */}
+        <div className="flex-1 p-4 border rounded-lg bg-gray-100">
+          <h3 className="text-lg font-semibold mb-4">Analysis Results</h3>
+          {loadingAnalysis ? (
+            <p>Analyzing screenshot...</p>
+          ) : analysis ? (
+            <pre className="text-sm bg-gray-200 p-2 rounded-lg overflow-auto">
+              {JSON.stringify(analysis, null, 2)}
+            </pre>
+          ) : (
+            <p>No analysis available</p>
+          )}
+        </div>
 
           {/* Confidence Score */}
           <div className="p-4 border rounded-lg bg-gray-100">

@@ -17,10 +17,8 @@ export default async function handler(
     });
     const page = await browser.newPage();
 
-    // Navigate to the page and wait for initial load
     await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
-    // Scroll to the bottom of the page to trigger lazy loading
     for (let i = 0; i < 2; i++) {
       await page.evaluate(async () => {
         await new Promise((resolve) => {
@@ -38,32 +36,24 @@ export default async function handler(
           }, 100);
         });
       });
-      // Wait a bit before the next scroll
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
 
-    // Scroll back to the top of the page
     await page.evaluate(() => window.scrollTo(0, 0));
-
-    // Wait for the content to load (use a broad selector or function for reliability)
     await page.waitForSelector("body", { timeout: 120000 });
-
-    // Optional: Add an extra delay
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    // Take a full-page screenshot
     const screenshot = await page.screenshot({
       fullPage: true,
       encoding: "base64",
     });
 
-    // Get the HTML content of the page
     const htmlContent = await page.content();
-
     await browser.close();
+
     res.status(200).json({ screenshot, htmlContent });
   } catch (error) {
-    console.error("Error scraping website:", error);
-    res.status(500).json({ error: "Error scraping website" });
+    console.error("Error capturing screenshot:", error);
+    res.status(500).json({ error: "Error capturing screenshot" });
   }
 }
