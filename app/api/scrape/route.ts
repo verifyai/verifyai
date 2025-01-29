@@ -6,26 +6,24 @@ import { pineconeRestrictedService } from "@/app/lib/services/pineconeQuery-serv
 export async function POST(request: Request) {
   try {
     const { url } = await request.json();
-    console.log("Scraping URL:", url);
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
     // Scrape products
     const products = await scraperService.scrapeProducts(url);
-    console.log("Scraped products:", products);
+
     // Generate embeddings
     const embeddings = await openAIService.embedProducts(products);
-    console.log("Generated embeddings:", embeddings);
+
     // Upsert to Pinecone
     await pineconeService.upsertProducts(embeddings);
-    console.log("Upserted to Pinecone");
+    
 
     // Extract just the embedding vector from the first product
     const firstEmbedding = embeddings[0]?.embedding;
     if (firstEmbedding) {
       const restrictedMatches = await pineconeRestrictedService.queryRestrictedItems(firstEmbedding);
-      console.log("Checked against restricted items:", restrictedMatches);
     }
 
     return NextResponse.json({
