@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { scraperService } from "@/app/lib/services/scraper-service";
 import { openAIService } from "@/app/lib/services/openai-service";
 import { pineconeService } from "@/app/lib/services/pinecone-service";
-
+import { pineconeRestrictedService } from "@/app/lib/services/pineconeQuery-service";
 export async function POST(request: Request) {
   try {
     const { url } = await request.json();
-
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
@@ -19,6 +18,13 @@ export async function POST(request: Request) {
 
     // Upsert to Pinecone
     await pineconeService.upsertProducts(embeddings);
+    
+
+    // Extract just the embedding vector from the first product
+    const firstEmbedding = embeddings[0]?.embedding;
+    if (firstEmbedding) {
+      const restrictedMatches = await pineconeRestrictedService.queryRestrictedItems(firstEmbedding);
+    }
 
     return NextResponse.json({
       message: "Request processed successfully",
