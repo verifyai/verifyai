@@ -97,7 +97,7 @@
   },
   {
     "name": "Computer Hardware",
-    "alts": "IT information technology repair accessories usb"
+    "alts": "IT information technology repair accessories usb "
   },
   {
     "name": "Computer Networking",
@@ -118,10 +118,6 @@
   {
     "name": "Consumer Goods",
     "alts": "retail shop market products"
-  },
-  {
-    "name": "Consumer Services",
-    "alts": "undefined"
   },
   {
     "name": "Cosmetics",
@@ -182,10 +178,6 @@
   {
     "name": "Farming",
     "alts": "agriculture crop dairy grain fruit vegetable meat packing grow organic"
-  },
-  {
-    "name": "File Sharing",
-    "alts": ""
   },
   {
     "name": "Financial Services",
@@ -274,10 +266,6 @@
   {
     "name": "Information Technology/IT",
     "alts": "computer security network system domain IT"
-  },
-  {
-    "name": "Insurance",
-    "alts": "undefined"
   },
   {
     "name": "International Affairs",
@@ -397,4 +385,226 @@
   },
   {
     "name": "Nanotechnology",
-    "alts": "manufacturing machine
+    "alts": "manufacturing machine industry electric electronic carbon medicine chemical"
+  },
+  {
+    "name": "Newspapers/Journalism",
+    "alts": "paper publish article writing edit literature"
+  },
+  {
+    "name": "Non-Profit/Volunteering",
+    "alts": "charity donate give money drive service philanthropy"
+  },
+  {
+    "name": "Oil/Energy/Solar/Greentech",
+    "alts": "gas petroleum chemical power plant generator diesel mining ethanol electricity"
+  },
+  {
+    "name": "Online Publishing",
+    "alts": "stream video song band album music movie tv watch content subscription download"
+  },
+  {
+    "name": "Outsourcing/Offshoring",
+    "alts": "hr human resources country international language job career work employ factory"
+  },
+  {
+    "name": "Package/Freight Delivery",
+    "alts": "ship cargo freight truck train rail transport drop supply line"
+  },
+  {
+    "name": "Packaging/Containers",
+    "alts": "plastic ship cargo freight truck train rail transport drop supply line"
+  },
+  {
+    "name": "Paper/Forest Products",
+    "alts": "wood pulp tree saw mill board building construction mulch"
+  },
+  {
+    "name": "Performing Arts",
+    "alts": "theater show comedy club concert music play dance"
+  },
+  {
+    "name": "Prepaid Cards/Gift Cards",
+    "alts": "debit credit tokens money voucher phone card"
+  },
+  {
+    "name": "Pharmaceuticals",
+    "alts": "medicine drug chemical health care doctor hospital clinic"
+  },
+  {
+    "name": "Philanthropy",
+    "alts": "charity donate give money fund drive service nonprofit wealth asset estate"
+  },
+  {
+    "name": "Photography",
+    "alts": "picture develop image print shoot camera studio art graphic media"
+  },
+  {
+    "name": "Plastics",
+    "alts": "manufacturing petroleum chemical industrial materials oil"
+  },
+  {
+    "name": "Political Organization",
+    "alts": "campaign pac activism government state law lobby nonprofit union"
+  },
+  {
+    "name": "Precious Metals",
+    "alts": "gold silver platinum copper coin bullion"
+  },
+  {
+    "name": "Primary/Secondary Education",
+    "alts": "school grade teach"
+  },
+  {
+    "name": "Printing",
+    "alts": "paper publish advertising book magazine newspaper 3d card art manufacturing"
+  },
+  {
+    "name": "Professional Training",
+    "alts": "coaching instruction workplace support fitness health studio sport workout education"
+  },
+  {
+    "name": "Public Policy",
+    "alts": "state government federal law regulation city town court politics nonprofit"
+  },
+  {
+    "name": "Public Relations/PR",
+    "alts": "communications marketing sales publish news advertising consulting"
+  },
+  {
+    "name": "Public Safety",
+    "alts": "hazard protection danger crime security health guard emergency"
+  },
+  {
+    "name": "Publishing Industry",
+    "alts": "book ebook magazine newspaper article writing print information"
+  },
+  {
+    "name": "Railroad Manufacture",
+    "alts": "train line transportation ship freight cargo industrial steel"
+  },
+  {
+    "name": "Ranching",
+    "alts": "farm land cattle chicken pig goat horse meat beef dairy animal agriculture"
+  },
+  {
+    "name": "Real Estate/Mortgage",
+    "alts": "property asset wealth management apartment condo rent lease"
+  },
+  {
+    "name": "Recreational Facilities/Services",
+    "alts": "game outdoors sport exercise gym fitness health"
+  },
+  {
+    "name": "Religious Institutions",
+    "alts": "worship god church ministry monastery temple shrine synagogue mosque chapel basilica conference diocese nonprofit community"
+  },
+  {
+    "name": "Renewables/Environment",
+    "alts": "recycle garbage waste green landfill clean energy solar earth"
+  },
+  {
+    "name": "Research Industry",
+    "alts": "science publish study report journal survey information academic nonprofit school"
+  },
+  {
+    "name": "Restaurants",
+    "alts": "food drink beverage bar club service meal eat dining order"
+  },
+  {
+    "name": "Retail Industry",
+    "alts": "mall store commercial consumer sale"
+  },
+  {
+    "name": "Security/Investigations",
+    "alts": "detective private guard bodyguard"
+  },
+  {
+    "name": "Semiconductors",
+    "alts": "electric electronic computer hardware IT circuits"
+  },
+  {
+    "name": "Shipbuilding",
+    "alts": "maritime port boat sail dock water ocean cargo freight"
+  },
+  {
+    "name": "Sporting Goods",
+    "alts": "shoe baseball football basketball soccer tennis hockey ball"
+  },
+  {
+    "name": "Sports",
+    "alts": "stadium game match play baseball football basketball soccer tennis hockey ball compete"
+  },
+  {
+    "name": "Staffing/Recruiting",
+    "alts": "hr human resources job position application career work"
+  },
+  {
+    "name": "Supermarkets",
+    "alts": "grocery store food supplies retail shop"
+  },
+  {
+    "name": "Telecommunications",
+    "alts": "phone internet network cable cell provider"
+  },
+  {
+    "name": "Textiles",
+    "alts": "cloth cotton wool nylon polyester fabric"
+  },
+  {
+    "name": "Think Tanks",
+    "alts": "study publish journal research academic nonprofit organizations"
+  },
+  {
+    "name": "Tobacco",
+    "alts": "cigar smoke nicotine"
+  },
+  {
+    "name": "Translation/Localization",
+    "alts": "language speech international"
+  },
+  {
+    "name": "Transportation",
+    "alts": "trucking railroad haul trade train ship cargo freight"
+  },
+  {
+    "name": "Utilities",
+    "alts": "service provider isp power water gas internet public transport"
+  },
+  {
+    "name": "Venture Capital/VC",
+    "alts": "invest wealth asset fund real estate trading money stock financial management"
+  },
+  {
+    "name": "Veterinary",
+    "alts": "animal pet grooming health medicine"
+  },
+  {
+    "name": "Video on Demand",
+    "alts": "pay-per-view online movies shows tv porn"
+  },
+  {
+    "name": "VPN/Hosting",
+    "alts": "webhosting vps proxy domain server"
+  },
+  {
+    "name": "Warehousing",
+    "alts": "storage distribution wholesale drop shipping"
+  },
+  {
+    "name": "Wholesale",
+    "alts": "warehouse drop shipping distribution"
+  },
+  {
+    "name": "Wine/Spirits",
+    "alts": "beer drink alcohol beverage liquor vineyard"
+  },
+  {
+    "name": "Wireless",
+    "alts": "wifi internet hotspot router modem"
+  },
+  {
+    "name": "Writing/Editing",
+    "alts": "publish book ebook magazine newspaper article"
+  }
+]
