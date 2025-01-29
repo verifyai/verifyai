@@ -38,8 +38,8 @@ export default function StartPage() {
     localStorage.setItem('industry', formData.industry);
     localStorage.setItem('description', formData.description);
 
-    // Redirect to the loading page
-    router.push('/loading-screenshot');
+    // Redirect directly to dashboard
+    router.push('/dashboard');
   };
 
   return (

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export type AlertMessage = {
   type: string;
@@ -12,7 +12,7 @@ export default function EventStream() {
   const [events, setEvents] = useState<AlertMessage[]>([]);
 
   useEffect(() => {
-    const eventSource = new EventSource('/lib/alerts');
+    const eventSource = new EventSource("/lib/alerts");
 
     const handleMessage = (event: MessageEvent) => {
       const data: AlertMessage = JSON.parse(event.data);
@@ -27,7 +27,7 @@ export default function EventStream() {
     eventSource.onmessage = handleMessage;
 
     eventSource.onerror = () => {
-      console.error('EventSource connection failed.');
+      console.error("EventSource connection failed.");
       eventSource.close();
     };
 
@@ -38,28 +38,15 @@ export default function EventStream() {
   }, []);
 
   return (
-    <div
-      style={{
-        padding: '8px',
-      }}
-    >
-      <ul
-        style={{ listStyle: 'none', padding: 0, textAlign: 'left', margin: 0 }}
-      >
-        {events.map((event, index) => (
-          <li
-            key={index}
-            style={{
-              fontWeight: index === events.length - 1 ? 'bold' : 'normal',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <span style={{ marginRight: '8px' }}>✅</span>
-            <span>{event.message}</span>
-          </li>
-        ))}
-      </ul>
+    <div className="space-y-2">
+      {events.map((event, index) => (
+        <div key={index} className="flex items-center text-sm">
+          <div className="w-4 h-4 border-2 bg-green-500 border-green-500 rounded-full mr-2 flex items-center justify-center">
+            <span className="text-white text-xs">✓</span>
+          </div>
+          <span>{event.message}</span>
+        </div>
+      ))}
     </div>
   );
 }

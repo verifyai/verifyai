@@ -1,23 +1,53 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
+import EventStream from "./EventStream";
 
 export default function Dashboard() {
   const [data, setData] = useState({
-    screenshotUrl: '',
-    websiteUrl: '',
-    businessName: '',
-    industry: '',
-    description: '',
+    screenshotUrl: "",
+    websiteUrl: "",
+    businessName: "",
+    industry: "",
+    description: "",
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingError, setLoadingError] = useState(false);
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+
+  const fetchScreenshot = async () => {
+    try {
+      const websiteUrl = localStorage.getItem("websiteUrl");
+
+      if (!websiteUrl) {
+        throw new Error("No website URL found in localStorage.");
+      }
+
+      const response = await fetch("/api/screenshot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: websiteUrl }),
+      });
+
+      const data = await response.json();
+      localStorage.setItem("screenshotUrl", data.imageUrl);
+      return data.imageUrl;
+    } catch (error) {
+      console.error("Error during loading:", error);
+      setLoadingError(true);
+      return null;
+    }
+  };
 
   const startWebsiteAnalysis = useCallback(async () => {
     try {
-      const response = await fetch('/api/run', {
-        method: 'POST',
+      const response = await fetch("/api/run", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           websiteUrl: data.websiteUrl,
@@ -29,29 +59,41 @@ export default function Dashboard() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to analyze screenshot');
+        throw new Error("Failed to analyze screenshot");
       }
 
       const openAiResponse = await response.json();
+      setAnalysisComplete(true);
+      setIsLoading(false);
       // TODO: UPDATE THE UI WITH RESPONSE FROM DATA ANALYSIS
-      console.log('Analysis completed:', openAiResponse);
+      console.log("Analysis completed:", openAiResponse);
     } catch (error) {
-      console.error('Error analyzing data:', error);
+      console.error("Error analyzing data:", error);
+      setLoadingError(true);
+      setIsLoading(false);
     }
   }, [data]);
 
   useEffect(() => {
-    setData({
-      screenshotUrl: localStorage.getItem('screenshotUrl') || '',
-      websiteUrl: localStorage.getItem('websiteUrl') || '',
-      businessName: localStorage.getItem('businessName') || '',
-      industry: localStorage.getItem('industry') || '',
-      description: localStorage.getItem('description') || '',
-    });
+    const initializeData = async () => {
+      // First fetch the screenshot
+      const screenshotUrl = await fetchScreenshot();
+
+      // Then set all the data
+      setData({
+        screenshotUrl: screenshotUrl || "",
+        websiteUrl: localStorage.getItem("websiteUrl") || "",
+        businessName: localStorage.getItem("businessName") || "",
+        industry: localStorage.getItem("industry") || "",
+        description: localStorage.getItem("description") || "",
+      });
+    };
+
+    initializeData();
   }, []);
 
   useEffect(() => {
-    const isDataComplete = Object.values(data).every((value) => value); // Check if all fields have truthy values
+    const isDataComplete = Object.values(data).every((value) => value);
     if (isDataComplete) {
       startWebsiteAnalysis();
     }
@@ -91,7 +133,7 @@ export default function Dashboard() {
           <div className="p-4 border rounded-lg bg-gray-100">
             <h3 className="text-lg font-semibold mb-2">Website Details</h3>
             <p className="text-sm">
-              <span className="font-medium">Website URL:</span>{' '}
+              <span className="font-medium">Website URL:</span>{" "}
               {data.websiteUrl && (
                 <a
                   href={data.websiteUrl}
@@ -115,35 +157,32 @@ export default function Dashboard() {
           {/* Progress */}
           <div className="p-4 border rounded-lg bg-gray-100">
             <h3 className="text-lg font-semibold mb-4">Progress</h3>
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <div className="w-4 h-4 border-2 border-gray-400 rounded-full mr-2"></div>
-                <p>Scanning Website</p>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 border-2 border-gray-400 rounded-full mr-2"></div>
-                <p>Checking Restrictions</p>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 border-2 border-gray-400 rounded-full mr-2"></div>
-                <p>Checking Compliance</p>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 border-2 border-gray-400 rounded-full mr-2"></div>
-                <p>Scoring</p>
-              </div>
+            <div className="space-y-4">
+              <EventStream />
+              {isLoading && (
+                <div className="flex justify-center mt-4">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
+                </div>
+              )}
+              {loadingError && (
+                <p className="text-red-500 mt-4">
+                  An error occurred while loading. Please try again.
+                </p>
+              )}
             </div>
           </div>
 
           {/* Confidence Score */}
           <div className="p-4 border rounded-lg bg-gray-100">
-            <h3 className="text-lg font-semibold mb-4">Confidence Score</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              OpenAI Confidence Score
+            </h3>
             <div className="space-y-3">
               {[
-                'Ownership',
-                'Certificates',
-                'Restrictions',
-                'Product Page',
+                "Ownership",
+                "Certificates",
+                "Restrictions",
+                "Product Page",
               ].map((item) => (
                 <div key={item}>
                   <div className="flex justify-between text-sm mb-1">
