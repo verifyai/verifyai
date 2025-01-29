@@ -42,7 +42,6 @@ export class OpenAIService {
             Provide only the JSON object, no additional explanation.`;
 
     try {
-      console.log("Analyzing URLs with OpenAI:", urls.join(", "));
       const response = await this.client.chat.completions.create({
         model: "gpt-4",
         messages: [
@@ -88,7 +87,6 @@ export class OpenAIService {
             embedding,
           });
         }
-        console.log(`Generated embedding ${i + 1}/${products.length}`);
       } catch (error) {
         console.error(`Error embedding product at index ${i}:`, error);
       }
@@ -116,7 +114,6 @@ export const analyzeProduct = async (
     const analysis = await openAIService.embedProducts(cleanedProducts);
 
     res.locals.analysis = analysis;
-    console.log(analysis);
     next();
   } catch (error) {
     console.error("Error analyzing products:", error);
@@ -141,7 +138,6 @@ export class OpenAIServiceScrapeRating {
 
 
 async analyzeEmbeddingResponse(restrictedMatches: { score: number; metadata: RestrictedItemData }[]): Promise<any> {
-  console.log("Restricted Matches Being Sent:", restrictedMatches);
 
   if (!restrictedMatches || restrictedMatches.length === 0) {
     throw new Error("No restricted matches found.");
@@ -205,8 +201,6 @@ async analyzeEmbeddingResponse(restrictedMatches: { score: number; metadata: Res
     if (!content) {
       throw new Error("No content returned from OpenAI");
     }
-
-    console.log("Raw OpenAI Response:", content);
 
     // Force parsing as JSON
     try {

@@ -13,26 +13,23 @@ export async function POST(request: Request) {
 
     // Scrape products
     const products = await scraperService.scrapeProducts(url);
-    console.log(products);
     // Generate embeddings
     const embeddings = await openAIService.embedProducts(products);
-    console.log(embeddings);
+    
     // Upsert to Pinecone
     // const upserted = await pineconeService.upsertProducts(embeddings);
-    // console.log(upserted);
 
     // Extract just the embedding vector from the first product
     const firstEmbedding = embeddings[0]?.embedding;
     let restrictedMatches;
     if (firstEmbedding) {
       restrictedMatches = await pineconeRestrictedService.queryRestrictedItems(firstEmbedding);
-      console.log(restrictedMatches);
     }
     let analysis;
     if (restrictedMatches) {
       analysis = await openAIServiceScrapeRating.analyzeEmbeddingResponse(restrictedMatches);
     }
-    console.log(analysis);
+
 
 
     return NextResponse.json({
