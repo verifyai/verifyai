@@ -1,8 +1,8 @@
 "use client";
 
-import { useFormState } from "react-dom";
 import { useRouter } from "next/navigation";
 import industries from "../public/data/industries.json";
+import { useActionState } from "react";
 
 type Industry = {
   name: string;
@@ -21,7 +21,7 @@ async function submitForm(prevState: { success: boolean }, formData: FormData) {
 
 export default function StartPage() {
   const router = useRouter();
-  const [state, formAction] = useFormState(submitForm, { success: false });
+  const [state, formAction] = useActionState(submitForm, { success: false });
 
   // Redirect after successful submission
   if (state.success) {
