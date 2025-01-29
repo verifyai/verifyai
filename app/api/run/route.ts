@@ -1,29 +1,45 @@
 import { NextResponse } from 'next/server';
 import { sitemapService } from '@/app/lib/services/sitemap-service';
 import { openAIService } from '@/app/lib/services/openai-service';
-
+import { uploadToCloudinary } from '@/app/lib/services/cloudinary-service';
 export async function POST(request: Request) {
   try {
-    const { websiteUrl } = await request.json();
+    const { websiteUrl, screenshotUrl } = await request.json();
 
-    //First scrape the URLs
+    if (!screenshotUrl) {
+      throw new Error('Screenshot URL is required.');
+    }
+
+    console.log('Screenshot Url In Run:', screenshotUrl);
+    
+    // Upload the screenshot to Cloudinary
+    const cloudinaryUrl = await uploadToCloudinary(screenshotUrl);
+
+    console.log('Uploaded Screenshot URL:', cloudinaryUrl);
+
+    // Scrape the website URLs
     const scrapedData = await sitemapService.scrapeUrl(websiteUrl);
 
-    // Then analyze them with OpenAI
+    // Analyze the scraped links with OpenAI
     const analysis = await openAIService.determineTargetURLs(scrapedData.links);
 
+    // Analyze the screenshot using OpenAI
+    const screenshotAnalysis = await openAIService.analyzeScreenshot(
+      cloudinaryUrl
+    );
+
     return NextResponse.json({
-      message: 'Request processed successfully',
-      data: scrapedData,
-      analysis: analysis,
+      message: 'Analysis completed',
+      scrapedData,
+      analysis,
+      screenshotAnalysis,
+      cloudinaryUrl,
     });
   } catch (error) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? `An error occurred in api/run ${error.message}`
-            : 'An error occurred in api/run',
+          error instanceof Error ? `Error: ${error.message}` : 'Unknown error',
       },
       { status: 500 }
     );

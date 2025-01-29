@@ -42,31 +42,24 @@ export default function Dashboard() {
 
   const startWebsiteAnalysis = useCallback(async () => {
     try {
+      console.log("Starting website analysis...");
       const response = await fetch("/api/run", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           websiteUrl: data.websiteUrl,
-          businessName: data.businessName,
-          industry: data.industry,
-          description: data.description,
-          screenshotUrl: data.screenshotUrl,
+          screenshotUrl: data.screenshotUrl, // Pass the local screenshot URL
         }),
       });
-
+  
       if (!response.ok) {
-        throw new Error("Failed to analyze screenshot");
+        throw new Error("Failed to analyze website");
       }
-
-      const openAiResponse = await response.json();
-      setIsLoading(false);
-      // TODO: UPDATE THE UI WITH RESPONSE FROM DATA ANALYSIS
-      console.log("Analysis completed:", openAiResponse);
+  
+      const result = await response.json();
+      console.log("Analysis completed:", result);
     } catch (error) {
-      console.error("Error analyzing data:", error);
-      setIsLoading(false);
+      console.error("Error analyzing website:", error);
     }
   }, [data]);
 
@@ -89,6 +82,8 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    console.log("Checking if data is complete...");
+    console.log("Data:", data); 
     const isDataComplete = Object.values(data).every((value) => value);
     if (isDataComplete) {
       startWebsiteAnalysis();
@@ -105,7 +100,7 @@ export default function Dashboard() {
             <h3 className="font-semibold text-gray-900">Website Preview</h3>
           </div>
           <div className="p-5">
-            <div className="h-[400px] overflow-y-auto rounded-lg border-2 border-dashed border-gray-200">
+            <div className="h-[550px] overflow-y-auto rounded-lg border-2 border-dashed border-gray-200">
               {data.screenshotUrl ? (
                 <div className="relative w-full">
                   <Image
