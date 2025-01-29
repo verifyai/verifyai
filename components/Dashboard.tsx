@@ -1,54 +1,63 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
-import EventStream from "./EventStream";
-import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
+import EventStream from './EventStream';
+import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 
 export default function Dashboard() {
   const [data, setData] = useState({
-    screenshotUrl: "",
-    websiteUrl: "",
-    businessName: "",
-    industry: "",
-    description: "",
+    screenshotUrl: '',
+    websiteUrl: '',
+    businessName: '',
+    industry: '',
+    description: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [loadingError, setLoadingError] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [isScreenshotInProgress, setIsScreenshotInProgress] = useState(false);
 
-  const fetchScreenshot = async () => {
+  const fetchScreenshot = useCallback(async () => {
     try {
-      const websiteUrl = localStorage.getItem("websiteUrl");
+      const websiteUrl = localStorage.getItem('websiteUrl');
 
       if (!websiteUrl) {
-        throw new Error("No website URL found in localStorage.");
+        throw new Error('No website URL found in localStorage.');
       }
 
-      const response = await fetch("/api/screenshot", {
-        method: "POST",
+      if (isScreenshotInProgress) {
+        return data.screenshotUrl;
+      }
+
+      setIsScreenshotInProgress(true);
+
+      const response = await fetch('/api/screenshot', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ url: websiteUrl }),
       });
 
-      const data = await response.json();
-      localStorage.setItem("screenshotUrl", data.imageUrl);
-      return data.imageUrl;
+      const responseData = await response.json();
+      localStorage.setItem('screenshotUrl', responseData.imageUrl);
+      setIsScreenshotInProgress(false);
+      return responseData.imageUrl;
     } catch (error) {
-      console.error("Error during loading:", error);
+      console.error('Error during loading:', error);
       setLoadingError(true);
+      setIsScreenshotInProgress(false);
       return null;
     }
-  };
+  }, [isScreenshotInProgress, data.screenshotUrl]);
 
   const startWebsiteAnalysis = useCallback(async () => {
     try {
-      const response = await fetch("/api/run", {
-        method: "POST",
+      const response = await fetch('/api/run', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           websiteUrl: data.websiteUrl,
@@ -60,16 +69,16 @@ export default function Dashboard() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to analyze screenshot");
+        throw new Error('Failed to analyze screenshot');
       }
 
       const openAiResponse = await response.json();
       setAnalysisComplete(true);
       setIsLoading(false);
       // TODO: UPDATE THE UI WITH RESPONSE FROM DATA ANALYSIS
-      console.log("Analysis completed:", openAiResponse);
+      console.log('Analysis completed:', openAiResponse);
     } catch (error) {
-      console.error("Error analyzing data:", error);
+      console.error('Error analyzing data:', error);
       setLoadingError(true);
       setIsLoading(false);
     }
@@ -82,11 +91,11 @@ export default function Dashboard() {
 
       // Then set all the data
       setData({
-        screenshotUrl: screenshotUrl || "",
-        websiteUrl: localStorage.getItem("websiteUrl") || "",
-        businessName: localStorage.getItem("businessName") || "",
-        industry: localStorage.getItem("industry") || "",
-        description: localStorage.getItem("description") || "",
+        screenshotUrl: screenshotUrl || '',
+        websiteUrl: localStorage.getItem('websiteUrl') || '',
+        businessName: localStorage.getItem('businessName') || '',
+        industry: localStorage.getItem('industry') || '',
+        description: localStorage.getItem('description') || '',
       });
     };
 
@@ -113,14 +122,7 @@ export default function Dashboard() {
             <div className="h-[400px] overflow-y-auto rounded-lg border-2 border-dashed border-gray-200">
               {data.screenshotUrl ? (
                 <div className="relative w-full">
-                  <Image
-                    src={data.screenshotUrl}
-                    alt="Website Screenshot"
-                    width={1200}
-                    height={1200}
-                    className="w-full h-auto"
-                    priority
-                  />
+                  <Image src={data.screenshotUrl} alt="Website Screenshot" width={1200} height={1200} className="w-full h-auto" priority />
                 </div>
               ) : (
                 <div className="flex h-full items-center justify-center">
@@ -150,15 +152,11 @@ export default function Dashboard() {
               )}
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500">
-                Business
-              </label>
+              <label className="text-xs font-medium text-gray-500">Business</label>
               <p className="mt-1 text-sm text-gray-900">{data.businessName}</p>
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500">
-                Industry
-              </label>
+              <label className="text-xs font-medium text-gray-500">Industry</label>
               <p className="mt-1 text-sm text-gray-900">{data.industry}</p>
             </div>
           </div>
@@ -190,26 +188,17 @@ export default function Dashboard() {
             <h3 className="font-semibold text-gray-900">Confidence Scores</h3>
           </div>
           <div className="space-y-6 p-5">
-            {["Ownership", "Certificates", "Restrictions", "Product Page"].map(
-              (item) => (
-                <div key={item}>
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      {item}
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      75%
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
-                      style={{ width: "75%" }}
-                    />
-                  </div>
+            {['Ownership', 'Certificates', 'Restrictions', 'Product Page'].map((item) => (
+              <div key={item}>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">{item}</span>
+                  <span className="text-sm font-medium text-gray-900">75%</span>
                 </div>
-              )
-            )}
+                <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                  <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600" style={{ width: '75%' }} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
