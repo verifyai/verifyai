@@ -1,4 +1,5 @@
 import { RecordMetadata } from "@pinecone-database/pinecone";
+import { RestrictedItemData } from "./restricted";
 
 export interface ProductData extends RecordMetadata {
   name: string;
@@ -12,3 +13,8 @@ export interface ProductEmbedding {
   product: ProductData;
   embedding: number[];
 } 
+
+export interface ScrapeRating {
+  score: number;
+  metadata: RestrictedItemData;
+}

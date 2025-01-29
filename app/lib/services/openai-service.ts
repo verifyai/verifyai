@@ -1,7 +1,8 @@
-import { ProductData, ProductEmbedding } from "@/app/lib/types/product";
 import OpenAI from "openai";
 import { Request, Response, NextFunction } from "express";
-import "dotenv/config";
+import { pineconeRestrictedService } from "./pineconeQuery-service";
+import { ProductData, ProductEmbedding } from "../types/product";
+import { RestrictedItemData } from "../types/restricted";
 
 interface URLAnalysis {
   homepage: string;
@@ -19,7 +20,7 @@ export class OpenAIService {
 
   constructor() {
     this.client = new OpenAI({
-      // apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY,
     });
   }
 
@@ -120,5 +121,104 @@ export const analyzeProduct = async (
   }
 };
 
+
+/*
+========================================
+            Scrape Rating
+========================================  
+*/
+export class OpenAIServiceScrapeRating {
+  private client: OpenAI;
+
+  constructor() {
+    this.client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+
+
+async analyzeEmbeddingResponse(restrictedMatches: { score: number; metadata: RestrictedItemData }[]): Promise<any> {
+
+  if (!restrictedMatches || restrictedMatches.length === 0) {
+    throw new Error("No restricted matches found.");
+  }
+
+  const systemPrompt = `You are an AI designed to return JSON output only. 
+  Analyze the given restricted matches and return a risk assessment.
+
+  **STRICTLY FOLLOW THIS FORMAT:**
+  {
+    "score": 1,
+    "metadata": {
+      "restrictedItems": 1,
+      "productPages": 1,
+      "ownership": 1,
+      "overallSafety": 1
+    }
+  }
+
+   Give a rating of 1-10 with 10 being the safest for ownership, lack of restricted items, and product pages, with an overall safety for all three as the fourth metric. 
+   The restrictedMatches score is a return from a vector database based on comparison between scraped data embeddings and prohibited items embeddings.
+   Consider the restrictedMatches scores as a metric for the safety of the provided categories with the score representing 0 as a 1-1 return of 100% presents restricted items and 1 being a 0-1 return of 0% presents no restricted items whatsoever.
+   Anything above a restrictedMatches score of .75 is considered a perfect score with an output of 10. 
+
+   Example: 
+    {
+    score: 0.715159714,
+    metadata: {
+      category: 'Gambling',
+      description: 'Casino games, sports betting, and lotteries'
+    }
+  },
+  Expected Output: 
+   "score": 9,
+    "metadata": {
+      "restrictedItems": 9,
+      "productPages": 9,
+      "ownership": 9,
+      "overallSafety": 9
+    }
+
+  DO NOT include any explanations, extra text, or commentary. ONLY return a JSON object exactly in the specified format.`;
+
+  try {
+    const response = await this.client.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
+          role: "user",
+          content: `Here are the restricted matches: ${JSON.stringify(restrictedMatches)}`,
+        },
+      ],
+    });
+
+    const content = response.choices[0]?.message?.content?.trim();
+
+    if (!content) {
+      throw new Error("No content returned from OpenAI");
+    }
+
+    // Force parsing as JSON
+    try {
+      const parsedResponse = JSON.parse(content);
+      return parsedResponse;
+    } catch (error) {
+      console.error("Failed to parse OpenAI response:", error);
+      throw new Error("OpenAI response was not valid JSON.");
+    }
+  } catch (error) {
+    console.error("Error analyzing embedding response:", error);
+    throw error;
+  }
+}
+}
+
 // Export a singleton instance
 export const openAIService = new OpenAIService();
+
+// At the bottom of the file, add:
+export const openAIServiceScrapeRating = new OpenAIServiceScrapeRating();
