@@ -25,12 +25,11 @@ export async function POST(request: Request) {
     if (firstEmbedding) {
       restrictedMatches = await pineconeRestrictedService.queryRestrictedItems(firstEmbedding);
     }
+    
     let analysis;
     if (restrictedMatches) {
       analysis = await openAIServiceScrapeRating.analyzeEmbeddingResponse(restrictedMatches);
     }
-
-
 
     return NextResponse.json({
       message: "Request processed successfully",
