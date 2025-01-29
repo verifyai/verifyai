@@ -1,8 +1,4 @@
-import {
-  Pinecone,
-  PineconeRecord,
-  RecordMetadata,
-} from "@pinecone-database/pinecone";
+import { Pinecone, PineconeRecord } from "@pinecone-database/pinecone";
 import { Request, Response, NextFunction } from "express";
 import "dotenv/config";
 import { ProductData, ProductEmbedding } from "@/app/lib/types/product";
@@ -46,7 +42,7 @@ export class PineconeService {
     const batches = this.createBatches(pineconeRecords);
 
     const results = await Promise.allSettled(
-      batches.map(async (batch, i) => {
+      batches.map(async (batch) => {
         return this.index.upsert(batch);
       })
     );

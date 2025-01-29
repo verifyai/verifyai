@@ -14,8 +14,6 @@ export default function Dashboard() {
     description: "",
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingError, setLoadingError] = useState(false);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
 
   const fetchScreenshot = async () => {
     try {
@@ -38,7 +36,6 @@ export default function Dashboard() {
       return data.imageUrl;
     } catch (error) {
       console.error("Error during loading:", error);
-      setLoadingError(true);
       return null;
     }
   };
@@ -64,13 +61,11 @@ export default function Dashboard() {
       }
 
       const openAiResponse = await response.json();
-      setAnalysisComplete(true);
       setIsLoading(false);
       // TODO: UPDATE THE UI WITH RESPONSE FROM DATA ANALYSIS
       console.log("Analysis completed:", openAiResponse);
     } catch (error) {
       console.error("Error analyzing data:", error);
-      setLoadingError(true);
       setIsLoading(false);
     }
   }, [data]);
