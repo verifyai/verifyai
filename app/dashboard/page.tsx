@@ -9,7 +9,7 @@ export default function DashboardPage() {
             Website Analysis
           </h2>
           <p className="text-sm text-gray-600">
-            Monitor and analyze your website's compliance status
+            Monitor and analyze your website&apos;s compliance status
           </p>
         </div>
         <Dashboard />

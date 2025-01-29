@@ -1,46 +1,32 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import industries from "../public/data/industries.json";
+import { useActionState } from "react";
 
 type Industry = {
   name: string;
   alts: string;
 };
 
+async function submitForm(prevState: { success: boolean }, formData: FormData) {
+  // Save to localStorage (though normally you'd submit to a server here)
+  localStorage.setItem("websiteUrl", formData.get("url") as string);
+  localStorage.setItem("businessName", formData.get("businessName") as string);
+  localStorage.setItem("industry", formData.get("industry") as string);
+  localStorage.setItem("description", formData.get("description") as string);
+
+  return { success: true };
+}
+
 export default function StartPage() {
-  const [formData, setFormData] = useState({
-    businessName: "",
-    url: "",
-    industry: "",
-    description: "",
-  });
   const router = useRouter();
+  const [state, formAction] = useActionState(submitForm, { success: false });
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Save form data to localStorage
-    localStorage.setItem("websiteUrl", formData.url);
-    localStorage.setItem("businessName", formData.businessName);
-    localStorage.setItem("industry", formData.industry);
-    localStorage.setItem("description", formData.description);
-
-    // Redirect directly to dashboard
+  // Redirect after successful submission
+  if (state.success) {
     router.push("/dashboard");
-  };
+  }
 
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center p-4">
@@ -52,7 +38,7 @@ export default function StartPage() {
           <p className="text-gray-500 mb-8">
             Enter your business details below to get started.
           </p>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form action={formAction} className="space-y-6">
             <div className="space-y-2">
               <label
                 htmlFor="businessName"
@@ -65,8 +51,6 @@ export default function StartPage() {
                 name="businessName"
                 type="text"
                 placeholder="Enter your business name"
-                value={formData.businessName}
-                onChange={handleChange}
                 required
                 className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
@@ -83,8 +67,6 @@ export default function StartPage() {
                 name="url"
                 type="url"
                 placeholder="https://example.com"
-                value={formData.url}
-                onChange={handleChange}
                 required
                 className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
@@ -99,8 +81,6 @@ export default function StartPage() {
               <select
                 id="industry"
                 name="industry"
-                value={formData.industry}
-                onChange={handleChange}
                 required
                 className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -125,8 +105,6 @@ export default function StartPage() {
                 id="description"
                 name="description"
                 placeholder="Briefly describe your business"
-                value={formData.description}
-                onChange={handleChange}
                 required
                 rows={4}
                 className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
