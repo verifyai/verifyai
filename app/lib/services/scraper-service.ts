@@ -21,16 +21,69 @@ export class ScraperService {
     });
   }
 
+  private async bypassPopups(page: Page): Promise<void> {
+    try {
+      // Handle Age Verification Popup
+      const hasYesButton = await page.evaluate(() => {
+        const button = document.evaluate(
+          "//button[contains(text(), 'YES')]",
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null
+        ).singleNodeValue as HTMLElement;
+        if (button) button.click();
+        return !!button;
+      });
+      if (hasYesButton) {
+        await page.waitForFunction('setTimeout(() => true, 2000)');
+      }
+
+      // Handle Location Permission Popup
+      const hasAllowButton = await page.evaluate(() => {
+        const button = document.evaluate(
+          "//button[contains(text(), 'Allow while visiting the site')]",
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null
+        ).singleNodeValue as HTMLElement;
+        if (button) button.click();
+        return !!button;
+      });
+      if (hasAllowButton) {
+        await page.waitForFunction('setTimeout(() => true, 2000)');
+      }
+    } catch (error) {
+      console.error("Error handling popups:", error);
+    }
+  }
+
   private cleanText(text: string): string {
     return text.replace(/\s+/g, " ").replace(/\\n/g, "").trim();
   }
 
   async scrapeProducts(url: string): Promise<ProductData[]> {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      headless: false,  
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-blink-features=AutomationControlled", 
+      ],
+      defaultViewport: null,
+    });
     const page = await browser.newPage();
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    );
 
     try {
       await page.goto(url, { waitUntil: "networkidle2" });
+
+      // Attempt to bypass popups
+      await this.bypassPopups(page);
+
       await this.autoScroll(page);
 
       const products = await page.evaluate(() => {
@@ -114,6 +167,10 @@ export class ScraperService {
 
     try {
       await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+
+      // Attempt to bypass popups
+      await this.bypassPopups(page);
+
       await this.autoScroll(page);
 
       const screenshot = await page.screenshot({
