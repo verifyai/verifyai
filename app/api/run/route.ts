@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { sitemapService } from "@/app/lib/services/sitemap-service";
+// import { sitemapService } from "@/app/lib/services/sitemap-service";
 import { openAIService } from "@/app/lib/services/openai-service";
 import { uploadToImgbb } from "@/app/lib/services/imgbb-service"; // ✅ Import Imgbb uploader
 import sharp from "sharp";
 
 export async function POST(request: Request) {
   try {
-    const { websiteUrl, screenshotUrl } = await request.json();
+    const { screenshotUrl } = await request.json();
 
     if (!screenshotUrl) {
       throw new Error("Screenshot URL is required.");

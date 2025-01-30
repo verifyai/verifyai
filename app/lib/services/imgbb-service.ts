@@ -3,6 +3,12 @@ import fetch from "node-fetch";
 
 dotenv.config(); // Load environment variables
 
+interface ImgbbResponse {
+  success: boolean;
+  data?: { url: string };
+  error?: { message: string };
+}
+
 export async function uploadToImgbb(imageBuffer: Buffer): Promise<string> {
   const apiKey = process.env.IMGBB_API_KEY;
   if (!apiKey) throw new Error("Missing IMGBB_API_KEY in .env file");
@@ -21,9 +27,11 @@ export async function uploadToImgbb(imageBuffer: Buffer): Promise<string> {
       body: formData,
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as ImgbbResponse; // ✅ Explicitly cast to ImgbbResponse
 
-    if (!data.success) throw new Error(`Imgbb upload failed: ${data.error.message}`);
+    if (!data.success || !data.data) {
+      throw new Error(`Imgbb upload failed: ${data.error?.message || "Unknown error"}`);
+    }
 
     return data.data.url; // ✅ Returns the uploaded image URL
   } catch (error) {

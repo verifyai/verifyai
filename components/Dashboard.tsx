@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import EventStream from "./EventStream";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
-import { Result } from "postcss";
+// import { Result } from "postcss";
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -62,6 +62,7 @@ export default function Dashboard() {
   
       const result = await response.json();
       setWebsiteAnalysis(result.screenshotAnalysis.message);
+      setIsLoading(false);
       console.log("Analysis completed:", result);
     } catch (error) {
       console.error("Error analyzing website:", error);

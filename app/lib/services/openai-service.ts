@@ -4,7 +4,6 @@ import { Request, Response, NextFunction } from 'express';
 import { ProductData, ProductEmbedding } from '../types/product';
 import { RestrictedItemData } from '../types/restricted';
 
-
 interface URLAnalysis {
   homepage: string;
   product: string;
@@ -30,16 +29,16 @@ export class OpenAIService {
   ): Promise<Record<string, unknown>> {
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: 'gpt-4o-mini',
         messages: [
           {
-            role: "user",
+            role: 'user',
             content: [
-              { type: "text", text: "What's in this image?" },
+              { type: 'text', text: "What's in this image?" },
               {
-                type: "image_url",
+                type: 'image_url',
                 image_url: {
-                  "url": screenshotUrl,
+                  url: screenshotUrl,
                 },
               },
             ],
@@ -53,7 +52,6 @@ export class OpenAIService {
       const content =
         response.choices[0]?.message?.content ||
         'No insights returned from OpenAI.';
-
 
       console.log('OpenAI content:', content);
 
