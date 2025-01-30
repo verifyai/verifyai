@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 // import { pineconeRestrictedService } from "./pineconeQuery-service";
 import { ProductData, ProductEmbedding } from '../types/product';
 import { RestrictedItemData } from '../types/restricted';
+import { broadcastAlert } from '@/app/lib/eventEmitter';
 
 interface URLAnalysis {
   homepage: string;
@@ -29,7 +30,7 @@ export class OpenAIService {
   ): Promise<Record<string, unknown>> {
     try {
       const response = await this.client.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'user',
@@ -63,10 +64,8 @@ export class OpenAIService {
                 Split these into sections.
                 Keep this summary around 150-160 words.
 
-                Here is an example strcuture:
+                Here is an example structure:
 
-                Summary of the Website
-                The website appears to be dedicated to athletic clothing and footwear, featuring various Nike products such as running shoes and apparel. It promotes categories like men's, women's, and kids' clothing, indicating a wide range of offerings relevant to athletic activities.
                 Confidence in Nike Ownership
                 **Confidence Score: 90**
                 I am reasonably confident that this website belongs to Nike, as it prominently features Nike branding and product lines.
@@ -77,8 +76,8 @@ export class OpenAIService {
                 **Confidence Score: 95**
                 I am quite confident that this website does not sell restricted items as outlined above. Its focus is on sportswear and athletic gear, which aligns with general regulations on such products.
 
-                Take into account spacing I dont want there to bbe too much. Try to compress it as much as possible.
-              `,  
+                Take into account spacing. I dont want there to be too much spacing and for it to take up as less space vertically as possible.
+              `,
               },
               {
                 type: 'image_url',
@@ -92,11 +91,23 @@ export class OpenAIService {
         store: true,
       });
 
+      broadcastAlert({
+            type: 'OpenAI',
+            message: `Connected to OpenAI`,
+            timestamp: Date.now(),
+          }); 
+
       console.log('OpenAI response:', response.choices[0]?.message);
 
       const content =
         response.choices[0]?.message?.content ||
         'No insights returned from OpenAI.';
+
+        broadcastAlert({
+          type: 'OpenAI',
+          message: `OpenAI response recorded`,
+          timestamp: Date.now(),
+        }); 
 
       console.log('OpenAI content:', content);
 

@@ -84,14 +84,16 @@ export default function Dashboard() {
   // Formats the website analysis message for display
   const formatWebsiteAnalysis = (analysis: string) => {
     if (!analysis) return '';
-  
+
     return analysis
       .replace(/###\s*(.*?)/g, '<h3 class="text-lg font-semibold mt-4">$1</h3>') // Convert ### Headings to Styled Headings
-      .replace(/- \*\*(.*?):\*\* (\d+\/\d+)/g, '<p class="mt-2"><strong>$1:</strong> $2</p>') // Bold key-value pairs
+      .replace(
+        /- \*\*(.*?):\*\* (\d+\/\d+)/g,
+        '<p class="mt-2"><strong>$1:</strong> $2</p>'
+      ) // Bold key-value pairs
       .replace(/- /g, '<li class="mt-1 text-gray-700">') // Convert list items
       .replace(/\n/g, '<br/>'); // Convert new lines to HTML breaks
   };
-  
 
   // Initializes data when the component mounts (fetches website info and screenshot)
   useEffect(() => {
@@ -135,9 +137,10 @@ export default function Dashboard() {
         <div className="rounded-xl border border-gray-300 bg-white p-5 shadow-sm">
           <h3 className="mb-1 font-semibold text-gray-900">Website Details</h3>
           <div className="space-y-1">
+            {/* Website URL */}
             <div>
               <label className="text-xs font-medium text-gray-500">URL</label>
-              {data.websiteUrl && (
+              {data.websiteUrl ? (
                 <a
                   href={data.websiteUrl}
                   target="_blank"
@@ -147,23 +150,29 @@ export default function Dashboard() {
                   {data.websiteUrl}
                   <ExternalLink className="h-3 w-3" />
                 </a>
+              ) : (
+                <p className="mt-1 text-sm text-gray-500 animate-pulse">Fetching URL...</p>
               )}
             </div>
+
+            {/* Business Name */}
             <div>
-              <label className="text-xs font-medium text-gray-500">
-                Business
-              </label>
-              <p className="mt-1 text-sm text-gray-900">{data.businessName}</p>
+              <label className="text-xs font-medium text-gray-500">Business</label>
+              <p className="mt-1 text-sm text-gray-900">
+                {data.businessName ? data.businessName : <span className="text-gray-500 animate-pulse">Fetching Business Name...</span>}
+              </p>
             </div>
+
+            {/* Industry */}
             <div>
-              <label className="text-xs font-medium text-gray-500">
-                Industry
-              </label>
-              <p className="mt-1 text-sm text-gray-900">{data.industry}</p>
+              <label className="text-xs font-medium text-gray-500">Industry</label>
+              <p className="mt-1 text-sm text-gray-900">
+                {data.industry ? data.industry : <span className="text-gray-500 animate-pulse">Fetching Industry...</span>}
+              </p>
             </div>
           </div>
         </div>
-
+        
         {/* Website Preview */}
         <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
           <div className="border-b border-gray-200 px-5 py-4">
@@ -181,7 +190,7 @@ export default function Dashboard() {
                   priority
                 />
               ) : (
-                <div className="flex h-full items-center justify-center">
+                <div className="flex h-[450px] items-center justify-center">
                   <p className="text-sm text-gray-500">No Preview Available</p>
                 </div>
               )}
@@ -194,7 +203,7 @@ export default function Dashboard() {
       <div className="space-y-6">
         {/* Analysis Progress (Only visible while loading) */}
         {isLoading && (
-          <div className="rounded-xl border border-gray-300 bg-white shadow-sm h-[650px]">
+          <div className="rounded-xl border border-gray-300 bg-white shadow-sm h-[715px]">
             <div className="border-b border-gray-200 px-5 py-4">
               <h3 className="font-semibold text-gray-900">Analysis Progress</h3>
             </div>
@@ -211,11 +220,19 @@ export default function Dashboard() {
         {!isLoading && (
           <>
             {/* Website Analysis Card */}
-            <div ref={analysisCardRef} className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0">
+            <div
+              ref={analysisCardRef}
+              className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0"
+            >
               <div className="border-b border-gray-200 px-5 py-4">
                 <h3 className="font-semibold text-gray-900">OpenAI Analysis</h3>
               </div>
-              <div className="-mt-9 p-6 text-sm text-gray-800" dangerouslySetInnerHTML={{ __html: formatWebsiteAnalysis(websiteAnalysis || '') }} />
+              <div
+                className="-mt-6 p-6 text-sm text-gray-800"
+                dangerouslySetInnerHTML={{
+                  __html: formatWebsiteAnalysis(websiteAnalysis || ''),
+                }}
+              />
             </div>
 
             {/* Confidence Scores Card */}
