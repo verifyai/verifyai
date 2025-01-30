@@ -23,10 +23,10 @@ export async function POST(request: Request) {
     const imgbbUrl = await uploadToImgbb(Buffer.from(imageBuffer));
 
     broadcastAlert({
-      type: 'ImgBB',
-      message: `Screenshot uploaded to the web`,
-      timestamp: Date.now(),
-    }); 
+        type: 'ImgBB',
+        message: `Screenshot uploaded to the web`,
+        timestamp: Date.now(),
+      }); 
     
     console.log("✅ Image uploaded to Imgbb:", imgbbUrl);
 
