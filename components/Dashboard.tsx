@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Stores OpenAI website analysis results
-  const [websiteAnalysis, setWebsiteAnalysis] = useState(null);
+  const [websiteAnalysis, setWebsiteAnalysis] = useState<string>('');
 
   // Hardcoded confidence scores (these will be dynamic later)
   const confidenceScores = {
@@ -82,7 +82,7 @@ export default function Dashboard() {
   }, [data]);
 
   // Formats the website analysis message for display
-  const formatWebsiteAnalysis = (analysis) => {
+  const formatWebsiteAnalysis = (analysis: string) => {
     if (!analysis) return '';
   
     return analysis
@@ -215,7 +215,7 @@ export default function Dashboard() {
               <div className="border-b border-gray-200 px-5 py-4">
                 <h3 className="font-semibold text-gray-900">OpenAI Analysis</h3>
               </div>
-              <div className="p-6 text-sm text-gray-800" dangerouslySetInnerHTML={{ __html: formatWebsiteAnalysis(websiteAnalysis) }} />
+              <div className="-mt-9 p-6 text-sm text-gray-800" dangerouslySetInnerHTML={{ __html: formatWebsiteAnalysis(websiteAnalysis || '') }} />
             </div>
 
             {/* Confidence Scores Card */}
