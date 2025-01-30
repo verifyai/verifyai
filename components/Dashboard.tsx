@@ -1,86 +1,95 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
-import EventStream from "./EventStream";
-import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
-// import { Result } from "postcss";
+import { useCallback, useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
+import EventStream from './EventStream';
+import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
+import gsap from 'gsap';
 
 export default function Dashboard() {
   const [data, setData] = useState({
-    screenshotUrl: "",
-    websiteUrl: "",
-    businessName: "",
-    industry: "",
-    description: "",
+    screenshotUrl: '',
+    websiteUrl: '',
+    businessName: '',
+    industry: '',
+    description: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [websiteAnalysis, setWebsiteAnalysis] = useState(null);
 
+  // State for confidence scores
+  const confidenceScores = {
+    Ownership: 95,
+    Certificates: 85,
+    Restrictions: 65,
+    'Product Page': 90,
+  };
+
+  // Refs for GSAP animations
+  const analysisCardRef = useRef(null);
+  const confidenceCardRef = useRef(null);
+
   const fetchScreenshot = async () => {
     try {
-      const websiteUrl = localStorage.getItem("websiteUrl");
+      const websiteUrl = localStorage.getItem('websiteUrl');
 
       if (!websiteUrl) {
-        throw new Error("No website URL found in localStorage.");
+        throw new Error('No website URL found in localStorage.');
       }
 
-      const response = await fetch("/api/screenshot", {
-        method: "POST",
+      const response = await fetch('/api/screenshot', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ url: websiteUrl }),
       });
 
       const data = await response.json();
-      console.log("After fetching screenshot:", data);
-      localStorage.setItem("screenshotUrl", data.imageUrl);
+      localStorage.setItem('screenshotUrl', data.imageUrl);
       return data.imageUrl;
     } catch (error) {
-      console.error("Error during loading:", error);
+      console.error('Error during loading:', error);
       return null;
     }
   };
 
   const startWebsiteAnalysis = useCallback(async () => {
     try {
-      console.log("Starting website analysis...");
+      console.log('Starting website analysis...');
       const screenshotUrlHard = `http://localhost:3000${data.screenshotUrl}`;
-      const response = await fetch("/api/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           websiteUrl: data.websiteUrl,
-          screenshotUrl: screenshotUrlHard, // Pass the local screenshot URL
+          screenshotUrl: screenshotUrlHard,
         }),
       });
-  
+
       if (!response.ok) {
-        throw new Error("Failed to analyze website");
+        throw new Error('Failed to analyze website');
       }
-  
+
       const result = await response.json();
       setWebsiteAnalysis(result.screenshotAnalysis.message);
       setIsLoading(false);
-      console.log("Analysis completed:", result);
+      console.log('Analysis completed:', result);
     } catch (error) {
-      console.error("Error analyzing website:", error);
+      console.error('Error analyzing website:', error);
     }
   }, [data]);
 
   useEffect(() => {
     const initializeData = async () => {
-      // First fetch the screenshot
       const screenshotUrl = await fetchScreenshot();
 
-      // Then set all the data
       setData({
-        screenshotUrl: screenshotUrl || "",
-        websiteUrl: localStorage.getItem("websiteUrl") || "",
-        businessName: localStorage.getItem("businessName") || "",
-        industry: localStorage.getItem("industry") || "",
-        description: localStorage.getItem("description") || "",
+        screenshotUrl: screenshotUrl || '',
+        websiteUrl: localStorage.getItem('websiteUrl') || '',
+        businessName: localStorage.getItem('businessName') || '',
+        industry: localStorage.getItem('industry') || '',
+        description: localStorage.getItem('description') || '',
       });
     };
 
@@ -88,49 +97,31 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    console.log("Checking if data is complete...");
-    console.log("Data:", data); 
     const isDataComplete = Object.values(data).every((value) => value);
     if (isDataComplete) {
       startWebsiteAnalysis();
     }
   }, [data, startWebsiteAnalysis]);
 
+  useEffect(() => {
+    if (!isLoading) {
+      // GSAP Animation: Fade & Slide in from Right
+      gsap.fromTo(
+        [analysisCardRef.current, confidenceCardRef.current],
+        { opacity: 0, x: 50 }, // Start hidden, pushed right
+        { opacity: 1, x: 0, duration: 0.6, stagger: 0.2, ease: 'power2.out' } // Slide in smoothly
+      );
+    }
+  }, [isLoading]);
+
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Left Column */}
       <div className="space-y-6">
-        {/* Preview Card */}
-        <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
-          <div className="border-b border-gray-200 px-5 py-4">
-            <h3 className="font-semibold text-gray-900">Website Preview</h3>
-          </div>
-          <div className="p-5">
-            <div className="h-[550px] overflow-y-auto rounded-lg border-2 border-dashed border-gray-200">
-              {data.screenshotUrl ? (
-                <div className="relative w-full">
-                  <Image
-                    src={data.screenshotUrl}
-                    alt="Website Screenshot"
-                    width={1200}
-                    height={1200}
-                    className="w-full h-auto"
-                    priority
-                  />
-                </div>
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <p className="text-sm text-gray-500">No Preview Available</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Website Details Card */}
+        {/* Website Details */}
         <div className="rounded-xl border border-gray-300 bg-white p-5 shadow-sm">
-          <h3 className="mb-4 font-semibold text-gray-900">Website Details</h3>
-          <div className="space-y-4">
+          <h3 className="mb-1 font-semibold text-gray-900">Website Details</h3>
+          <div className="space-y-1">
             <div>
               <label className="text-xs font-medium text-gray-500">URL</label>
               {data.websiteUrl && (
@@ -159,73 +150,106 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Right Column */}
-      <div className="space-y-6">
-        {/* Analysis Progress Card */}
-        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+        {/* Website Preview */}
+        <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
           <div className="border-b border-gray-200 px-5 py-4">
-            <h3 className="font-semibold text-gray-900">Analysis Progress</h3>
+            <h3 className="font-semibold text-gray-900">Website Preview</h3>
           </div>
           <div className="p-5">
-            <div className="space-y-4">
-              <EventStream />
-              {isLoading && (
-                <div className="flex items-center justify-center py-4">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+            <div className="h-[450px] overflow-y-auto rounded-lg border-2 border-dashed border-gray-200">
+              {data.screenshotUrl ? (
+                <Image
+                  src={data.screenshotUrl}
+                  alt="Website Screenshot"
+                  width={1200}
+                  height={1200}
+                  className="w-full h-auto"
+                  priority
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-sm text-gray-500">No Preview Available</p>
                 </div>
               )}
             </div>
           </div>
         </div>
-        
-        {/* Website Analysis Card */}
-        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
-          <div className="border-b border-gray-200 px-5 py-4">
-            <h3 className="font-semibold text-gray-900">OpenAI Analysis</h3>
-          </div>
-          <div className=" p-6  ">{websiteAnalysis}</div>
-        </div>
+      </div>
 
-        {/* Confidence Scores Card */}
-        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
-          <div className="border-b border-gray-200 px-5 py-4">
-            <h3 className="font-semibold text-gray-900">Confidence Scores</h3>
+      {/* Right Column */}
+      <div className="space-y-6">
+        {/* Analysis Progress (Only visible while loading) */}
+        {isLoading && (
+          <div className="rounded-xl border border-gray-300 bg-white shadow-sm h-[650px]">
+            <div className="border-b border-gray-200 px-5 py-4">
+              <h3 className="font-semibold text-gray-900">Analysis Progress</h3>
+            </div>
+            <div className="p-5">
+              <EventStream />
+              <div className="flex items-center justify-center py-4">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+              </div>
+            </div>
           </div>
-          <div className="space-y-6 p-5">
-            {["Ownership", "Certificates", "Restrictions", "Product Page"].map(
-              (item) => (
-                <div key={item}>
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">
-                      {item}
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      75%
-                    </span>
+        )}
+
+        {/* Website Analysis & Confidence Scores (Slide in when loading completes) */}
+        {!isLoading && (
+          <>
+            {/* Website Analysis Card */}
+            <div
+              ref={analysisCardRef}
+              className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0"
+            >
+              <div className="border-b border-gray-200 px-5 py-4">
+                <h3 className="font-semibold text-gray-900">OpenAI Analysis</h3>
+              </div>
+              <div className="p-6">{websiteAnalysis}</div>
+            </div>
+
+            {/* Confidence Scores Card */}
+            <div
+              ref={confidenceCardRef}
+              className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0"
+            >
+              <div className="border-b border-gray-200 px-5 py-4">
+                <h3 className="font-semibold text-gray-900">
+                  Confidence Scores
+                </h3>
+              </div>
+              <div className="space-y-6 p-5">
+                {/* Static Confidence Score Display */}
+                {Object.entries(confidenceScores).map(([label, score]) => (
+                  <div key={label}>
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        {label}
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {score}%
+                      </span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
+                        style={{ width: `${score}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
-                      style={{ width: "75%" }}
-                    />
-                  </div>
-                </div>
-              )
-            )}
-          </div>
-        </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between gap-4">
-          <button className="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200">
-            <ArrowLeft className="h-4 w-4" />
-            Go Back
+          <button className="rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-200">
+            <ArrowLeft className="h-4 w-4" /> Go Back
           </button>
-          <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
-            Continue
-            <ArrowRight className="h-4 w-4" />
+          <button className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
+            Continue <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>
