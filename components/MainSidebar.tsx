@@ -18,7 +18,7 @@ export function MainSidebar() {
     <Sidebar className="border-r border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <SidebarContent>
         <div className="flex h-14 items-center border-b border-border/40 px-6">
-          <h1 className="text-xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-semibold tracking-tight">
             VerifyAI
           </h1>
         </div>

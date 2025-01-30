@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 // import { pineconeRestrictedService } from "./pineconeQuery-service";
 import { ProductData, ProductEmbedding } from '../types/product';
 import { RestrictedItemData } from '../types/restricted';
+import { broadcastAlert } from '@/app/lib/eventEmitter';
 
 interface URLAnalysis {
   homepage: string;
@@ -29,12 +30,55 @@ export class OpenAIService {
   ): Promise<Record<string, unknown>> {
     try {
       const response = await this.client.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'user',
             content: [
-              { type: 'text', text: "What's in this image?" },
+              {
+                type: 'text',
+                text: `
+                The website in this screenshot is supposed to belong to "Nike" how confident are you that this is the case?
+                This website says they sell althletic clothing. How confident are you that this is the case?
+                This website may not sell any of these restricted items, which include:
+
+                Drugs and drug paraphernalia (e.g., narcotics, controlled substances, and any equipment designed for making or using drugs)
+                Marijuana/cannabis dispensaries and related products and businesses
+                Weapons, munitions, gunpowder, and other explosives (including fireworks)
+                Toxic, flammable, and radioactive materials
+                Pseudo-pharmaceuticals
+                Substances designed to mimic illegal drugs
+                Sexually explicit content
+                Sexually-related services
+                Pyramid and investment schemes, multi-level marketing schemes, and other unfair, predatory, or deceptive practices
+                Items used for speculation or hedging purposes (such as derivatives)
+                Credit and collection services
+                Items that infringe or violate intellectual property rights (e.g., copyrights, trademarks, trade secrets, or patents), including counterfeit or unauthorized goods
+                Products and services with varying legal status from state to state
+                Transactions that disclose the personal information of third parties in violation of applicable law
+                Transactions related to cloud mining
+
+                How confident are you that this is the case?
+
+                Please provide a summary of the website and answers to all of these questions with a confidence score of zero to 100. 
+                Split these into sections.
+                Keep this summary around 150-160 words.
+
+                Here is an example structure:
+
+                Confidence in Nike Ownership
+                **Confidence Score: 90**
+                I am reasonably confident that this website belongs to Nike, as it prominently features Nike branding and product lines.
+                Confidence in Selling Athletic Clothing
+                **Confidence Score: 85**
+                I am confident that the website sells athletic clothing based on its layout and product categories related to running and casual wear.
+                Confidence about Restricted Items
+                **Confidence Score: 95**
+                I am quite confident that this website does not sell restricted items as outlined above. Its focus is on sportswear and athletic gear, which aligns with general regulations on such products.
+
+                Take into account spacing. I dont want there to be too much spacing and for it to take up as less space vertically as possible.
+              `,
+              },
               {
                 type: 'image_url',
                 image_url: {
@@ -47,11 +91,23 @@ export class OpenAIService {
         store: true,
       });
 
+      broadcastAlert({
+            type: 'OpenAI',
+            message: `Connected to OpenAI`,
+            timestamp: Date.now(),
+          }); 
+
       console.log('OpenAI response:', response.choices[0]?.message);
 
       const content =
         response.choices[0]?.message?.content ||
         'No insights returned from OpenAI.';
+
+        broadcastAlert({
+          type: 'OpenAI',
+          message: `OpenAI response recorded`,
+          timestamp: Date.now(),
+        }); 
 
       console.log('OpenAI content:', content);
 

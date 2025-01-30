@@ -36,7 +36,7 @@ export default function StartPage() {
             Business Information
           </h2>
           <p className="text-gray-500 mb-8">
-            Enter your business details below to get started.
+            Enter the business&apos;s details below to get started.
           </p>
           <form action={formAction} className="space-y-6">
             <div className="space-y-2">
@@ -50,7 +50,7 @@ export default function StartPage() {
                 id="businessName"
                 name="businessName"
                 type="text"
-                placeholder="Enter your business name"
+                placeholder="Enter the business's name"
                 required
                 className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
@@ -104,7 +104,7 @@ export default function StartPage() {
               <textarea
                 id="description"
                 name="description"
-                placeholder="Briefly describe your business"
+                placeholder="Briefly describe the business"
                 required
                 rows={4}
                 className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
