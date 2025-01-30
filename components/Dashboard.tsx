@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import EventStream from "./EventStream";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+// import { Result } from "postcss";
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -14,6 +15,7 @@ export default function Dashboard() {
     description: "",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [websiteAnalysis, setWebsiteAnalysis] = useState(null);
 
   const fetchScreenshot = async () => {
     try {
@@ -32,6 +34,7 @@ export default function Dashboard() {
       });
 
       const data = await response.json();
+      console.log("After fetching screenshot:", data);
       localStorage.setItem("screenshotUrl", data.imageUrl);
       return data.imageUrl;
     } catch (error) {
@@ -42,31 +45,27 @@ export default function Dashboard() {
 
   const startWebsiteAnalysis = useCallback(async () => {
     try {
+      console.log("Starting website analysis...");
+      const screenshotUrlHard = `http://localhost:3000${data.screenshotUrl}`;
       const response = await fetch("/api/run", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           websiteUrl: data.websiteUrl,
-          businessName: data.businessName,
-          industry: data.industry,
-          description: data.description,
-          screenshotUrl: data.screenshotUrl,
+          screenshotUrl: screenshotUrlHard, // Pass the local screenshot URL
         }),
       });
-
+  
       if (!response.ok) {
-        throw new Error("Failed to analyze screenshot");
+        throw new Error("Failed to analyze website");
       }
-
-      const openAiResponse = await response.json();
+  
+      const result = await response.json();
+      setWebsiteAnalysis(result.screenshotAnalysis.message);
       setIsLoading(false);
-      // TODO: UPDATE THE UI WITH RESPONSE FROM DATA ANALYSIS
-      console.log("Analysis completed:", openAiResponse);
+      console.log("Analysis completed:", result);
     } catch (error) {
-      console.error("Error analyzing data:", error);
-      setIsLoading(false);
+      console.error("Error analyzing website:", error);
     }
   }, [data]);
 
@@ -89,6 +88,8 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    console.log("Checking if data is complete...");
+    console.log("Data:", data); 
     const isDataComplete = Object.values(data).every((value) => value);
     if (isDataComplete) {
       startWebsiteAnalysis();
@@ -100,12 +101,12 @@ export default function Dashboard() {
       {/* Left Column */}
       <div className="space-y-6">
         {/* Preview Card */}
-        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
+        <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
             <h3 className="font-semibold text-gray-900">Website Preview</h3>
           </div>
           <div className="p-5">
-            <div className="h-[400px] overflow-y-auto rounded-lg border-2 border-dashed border-gray-200">
+            <div className="h-[550px] overflow-y-auto rounded-lg border-2 border-dashed border-gray-200">
               {data.screenshotUrl ? (
                 <div className="relative w-full">
                   <Image
@@ -127,7 +128,7 @@ export default function Dashboard() {
         </div>
 
         {/* Website Details Card */}
-        <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-gray-300 bg-white p-5 shadow-sm">
           <h3 className="mb-4 font-semibold text-gray-900">Website Details</h3>
           <div className="space-y-4">
             <div>
@@ -163,8 +164,8 @@ export default function Dashboard() {
       {/* Right Column */}
       <div className="space-y-6">
         {/* Analysis Progress Card */}
-        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
+        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
             <h3 className="font-semibold text-gray-900">Analysis Progress</h3>
           </div>
           <div className="p-5">
@@ -178,10 +179,18 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        
+        {/* Website Analysis Card */}
+        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
+            <h3 className="font-semibold text-gray-900">OpenAI Analysis</h3>
+          </div>
+          <div className=" p-6  ">{websiteAnalysis}</div>
+        </div>
 
         {/* Confidence Scores Card */}
-        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
+        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
             <h3 className="font-semibold text-gray-900">Confidence Scores</h3>
           </div>
           <div className="space-y-6 p-5">

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { scraperService } from "@/app/lib/services/scraper-service";
 import { openAIService } from "@/app/lib/services/openai-service";
 import { openAIServiceScrapeRating } from "@/app/lib/services/openai-service";
-import { pineconeService } from "@/app/lib/services/pinecone-service";
+// import { pineconeService } from "@/app/lib/services/pinecone-service";
 import { pineconeRestrictedService } from "@/app/lib/services/pineconeQuery-service";
 export async function POST(request: Request) {
   try {
@@ -30,10 +30,11 @@ export async function POST(request: Request) {
     if (restrictedMatches) {
       analysis = await openAIServiceScrapeRating.analyzeEmbeddingResponse(restrictedMatches);
     }
-
+    
     return NextResponse.json({
       message: "Request processed successfully",
       data: products,
+      analysis: analysis,
     });
   } catch (error) {
     console.error("Error scraping website:", error);

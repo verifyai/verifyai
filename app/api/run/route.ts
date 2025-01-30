@@ -1,29 +1,43 @@
-import { NextResponse } from 'next/server';
-import { sitemapService } from '@/app/lib/services/sitemap-service';
-import { openAIService } from '@/app/lib/services/openai-service';
+import { NextResponse } from "next/server";
+import { openAIService } from "@/app/lib/services/openai-service";
+import { uploadToImgbb } from "@/app/lib/services/imgbb-service"; // ✅ Import Imgbb uploader
 
 export async function POST(request: Request) {
   try {
-    const { websiteUrl } = await request.json();
+    const { screenshotUrl } = await request.json();
 
-    //First scrape the URLs
-    const scrapedData = await sitemapService.scrapeUrl(websiteUrl);
+    if (!screenshotUrl) {
+      throw new Error("Screenshot URL is required.");
+    }
 
-    // Then analyze them with OpenAI
-    const analysis = await openAIService.determineTargetURLs(scrapedData.links);
+    console.log("📸 Screenshot URL:", screenshotUrl);
+
+    // ✅ Fetch image and convert to buffer
+    const response = await fetch(screenshotUrl);
+    if (!response.ok) throw new Error("Failed to fetch screenshot image.");
+
+    const imageBuffer = await response.arrayBuffer();
+
+    // ✅ Upload to Imgbb without resizing
+    const imgbbUrl = await uploadToImgbb(Buffer.from(imageBuffer));
+
+    console.log("✅ Image uploaded to Imgbb:", imgbbUrl);
+
+    // ✅ Send the Imgbb URL to OpenAI (NOT Base64)
+    const screenshotAnalysis = await openAIService.analyzeScreenshot(imgbbUrl);
+
+    console.log("🔍 Analysis completed:", screenshotAnalysis);
 
     return NextResponse.json({
-      message: 'Request processed successfully',
-      data: scrapedData,
-      analysis: analysis,
+      message: "Analysis completed",
+      screenshotAnalysis,
+      imgbbUrl,
     });
   } catch (error) {
+    console.error("❌ Error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? `An error occurred in api/run ${error.message}`
-            : 'An error occurred in api/run',
+        error: error instanceof Error ? `Error: ${error.message}` : "Unknown error",
       },
       { status: 500 }
     );

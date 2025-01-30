@@ -1,8 +1,8 @@
-import OpenAI from "openai";
-import { Request, Response, NextFunction } from "express";
-import { pineconeRestrictedService } from "./pineconeQuery-service";
-import { ProductData, ProductEmbedding } from "../types/product";
-import { RestrictedItemData } from "../types/restricted";
+import OpenAI from 'openai';
+import { Request, Response, NextFunction } from 'express';
+// import { pineconeRestrictedService } from "./pineconeQuery-service";
+import { ProductData, ProductEmbedding } from '../types/product';
+import { RestrictedItemData } from '../types/restricted';
 
 interface URLAnalysis {
   homepage: string;
@@ -24,6 +24,44 @@ export class OpenAIService {
     });
   }
 
+  async analyzeScreenshot(
+    screenshotUrl: string
+  ): Promise<Record<string, unknown>> {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: "What's in this image?" },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: screenshotUrl,
+                },
+              },
+            ],
+          },
+        ],
+        store: true,
+      });
+
+      console.log('OpenAI response:', response.choices[0]?.message);
+
+      const content =
+        response.choices[0]?.message?.content ||
+        'No insights returned from OpenAI.';
+
+      console.log('OpenAI content:', content);
+
+      return { message: content };
+    } catch (error) {
+      console.error('Error analyzing screenshot:', error);
+      throw error;
+    }
+  }
+
   async determineTargetURLs(urls: string[]): Promise<URLAnalysis> {
     const systemPrompt = `You are a URL analysis expert. From the provided list of URLs,
             identify exactly 4 URLs that represent:
@@ -43,27 +81,27 @@ export class OpenAIService {
 
     try {
       const response = await this.client.chat.completions.create({
-        model: "gpt-4",
+        model: 'gpt-4',
         messages: [
           {
-            role: "system",
+            role: 'system',
             content: systemPrompt,
           },
           {
-            role: "user",
-            content: `Please analyze these URLs: ${urls.join(", ")}`,
+            role: 'user',
+            content: `Please analyze these URLs: ${urls.join(', ')}`,
           },
         ],
       });
 
       const content = response.choices[0].message.content;
       if (!content) {
-        throw new Error("No content returned from OpenAI");
+        throw new Error('No content returned from OpenAI');
       }
       return JSON.parse(content);
     } catch (error) {
-      console.error("Error in OpenAI API call:", error);
-      throw new Error("Failed to analyze URLs with OpenAI");
+      console.error('Error in OpenAI API call:', error);
+      throw new Error('Failed to analyze URLs with OpenAI');
     }
   }
 
@@ -75,7 +113,7 @@ export class OpenAIService {
       try {
         const inputText = `${product.name} - ${product.price}`;
         const response = await this.client.embeddings.create({
-          model: "text-embedding-ada-002",
+          model: 'text-embedding-ada-002',
           input: inputText,
         });
 
@@ -108,7 +146,7 @@ export const analyzeProduct = async (
     const { cleanedProducts } = res.locals.scrapedData;
 
     if (!cleanedProducts || !Array.isArray(cleanedProducts)) {
-      throw new Error("Invalid or missing product data.");
+      throw new Error('Invalid or missing product data.');
     }
 
     const analysis = await openAIService.embedProducts(cleanedProducts);
@@ -116,11 +154,10 @@ export const analyzeProduct = async (
     res.locals.analysis = analysis;
     next();
   } catch (error) {
-    console.error("Error analyzing products:", error);
+    console.error('Error analyzing products:', error);
     res.status(500).json({ error: (error as Error).message });
   }
 };
-
 
 /*
 ========================================
@@ -136,14 +173,14 @@ export class OpenAIServiceScrapeRating {
     });
   }
 
+  async analyzeEmbeddingResponse(
+    restrictedMatches: { score: number; metadata: RestrictedItemData }[]
+  ): Promise<any> {
+    if (!restrictedMatches || restrictedMatches.length === 0) {
+      throw new Error('No restricted matches found.');
+    }
 
-async analyzeEmbeddingResponse(restrictedMatches: { score: number; metadata: RestrictedItemData }[]): Promise<any> {
-
-  if (!restrictedMatches || restrictedMatches.length === 0) {
-    throw new Error("No restricted matches found.");
-  }
-
-  const systemPrompt = `You are an AI designed to return JSON output only. 
+    const systemPrompt = `You are an AI designed to return JSON output only. 
   Analyze the given restricted matches and return a risk assessment.
 
   **STRICTLY FOLLOW THIS FORMAT:**
@@ -181,40 +218,42 @@ async analyzeEmbeddingResponse(restrictedMatches: { score: number; metadata: Res
 
   DO NOT include any explanations, extra text, or commentary. ONLY return a JSON object exactly in the specified format.`;
 
-  try {
-    const response = await this.client.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: `Here are the restricted matches: ${JSON.stringify(restrictedMatches)}`,
-        },
-      ],
-    });
-
-    const content = response.choices[0]?.message?.content?.trim();
-
-    if (!content) {
-      throw new Error("No content returned from OpenAI");
-    }
-
-    // Force parsing as JSON
     try {
-      const parsedResponse = JSON.parse(content);
-      return parsedResponse;
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: `Here are the restricted matches: ${JSON.stringify(
+              restrictedMatches
+            )}`,
+          },
+        ],
+      });
+
+      const content = response.choices[0]?.message?.content?.trim();
+
+      if (!content) {
+        throw new Error('No content returned from OpenAI');
+      }
+
+      // Force parsing as JSON
+      try {
+        const parsedResponse = JSON.parse(content);
+        return parsedResponse;
+      } catch (error) {
+        console.error('Failed to parse OpenAI response:', error);
+        throw new Error('OpenAI response was not valid JSON.');
+      }
     } catch (error) {
-      console.error("Failed to parse OpenAI response:", error);
-      throw new Error("OpenAI response was not valid JSON.");
+      console.error('Error analyzing embedding response:', error);
+      throw error;
     }
-  } catch (error) {
-    console.error("Error analyzing embedding response:", error);
-    throw error;
   }
-}
 }
 
 // Export a singleton instance

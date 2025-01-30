@@ -30,7 +30,7 @@ export default function StartPage() {
 
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-lg bg-white rounded-xl border border-gray-200 shadow-xl">
+      <div className="w-full max-w-lg bg-white rounded-xl border border-gray-300 shadow-xl">
         <div className="p-8">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
             Business Information
