@@ -101,8 +101,8 @@ export default function Dashboard() {
       {/* Left Column */}
       <div className="space-y-6">
         {/* Preview Card */}
-        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
+        <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
             <h3 className="font-semibold text-gray-900">Website Preview</h3>
           </div>
           <div className="p-5">
@@ -128,7 +128,7 @@ export default function Dashboard() {
         </div>
 
         {/* Website Details Card */}
-        <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-gray-300 bg-white p-5 shadow-sm">
           <h3 className="mb-4 font-semibold text-gray-900">Website Details</h3>
           <div className="space-y-4">
             <div>
@@ -164,8 +164,8 @@ export default function Dashboard() {
       {/* Right Column */}
       <div className="space-y-6">
         {/* Analysis Progress Card */}
-        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
+        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
             <h3 className="font-semibold text-gray-900">Analysis Progress</h3>
           </div>
           <div className="p-5">
@@ -181,16 +181,16 @@ export default function Dashboard() {
         </div>
         
         {/* Website Analysis Card */}
-        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
-            <h3 className="font-semibold text-gray-900">Analysis Progress</h3>
+        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
+            <h3 className="font-semibold text-gray-900">OpenAI Analysis</h3>
           </div>
-          <div className=" p-6">{websiteAnalysis}</div>
+          <div className=" p-6  ">{websiteAnalysis}</div>
         </div>
 
         {/* Confidence Scores Card */}
-        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4">
+        <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
             <h3 className="font-semibold text-gray-900">Confidence Scores</h3>
           </div>
           <div className="space-y-6 p-5">
