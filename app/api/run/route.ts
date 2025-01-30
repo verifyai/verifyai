@@ -1,45 +1,63 @@
-import { NextResponse } from 'next/server';
-import { sitemapService } from '@/app/lib/services/sitemap-service';
-import { openAIService } from '@/app/lib/services/openai-service';
-import { uploadToCloudinary } from '@/app/lib/services/cloudinary-service';
+import { NextResponse } from "next/server";
+import { sitemapService } from "@/app/lib/services/sitemap-service";
+import { openAIService } from "@/app/lib/services/openai-service";
+import { uploadToImgbb } from "@/app/lib/services/imgbb-service"; // ✅ Import Imgbb uploader
+import sharp from "sharp";
+
 export async function POST(request: Request) {
   try {
     const { websiteUrl, screenshotUrl } = await request.json();
 
     if (!screenshotUrl) {
-      throw new Error('Screenshot URL is required.');
+      throw new Error("Screenshot URL is required.");
     }
 
-    console.log('Screenshot Url In Run:', screenshotUrl);
-    
-    // Upload the screenshot to Cloudinary
-    const cloudinaryUrl = await uploadToCloudinary(screenshotUrl);
+    console.log("📸 Screenshot URL:", screenshotUrl);
 
-    console.log('Uploaded Screenshot URL:', cloudinaryUrl);
+    // ✅ Fetch image and convert to buffer
+    const response = await fetch(screenshotUrl);
+    if (!response.ok) throw new Error("Failed to fetch screenshot image.");
 
-    // Scrape the website URLs
-    const scrapedData = await sitemapService.scrapeUrl(websiteUrl);
+    const imageBuffer = await response.arrayBuffer();
 
-    // Analyze the scraped links with OpenAI
-    const analysis = await openAIService.determineTargetURLs(scrapedData.links);
+    // ✅ Resize image using sharp
+    const resizedImageBuffer = await sharp(Buffer.from(imageBuffer))
+      .resize({
+        width: 2000, // Max width
+        height: 768, // Max height
+        fit: "inside", // Maintain aspect ratio
+      })
+      .jpeg({ quality: 75 }) // Reduce file size with compression
+      .toBuffer();
 
-    // Analyze the screenshot using OpenAI
-    const screenshotAnalysis = await openAIService.analyzeScreenshot(
-      cloudinaryUrl
-    );
+    // ✅ Upload to Imgbb
+    const imgbbUrl = await uploadToImgbb(resizedImageBuffer);
+
+    console.log("✅ Image uploaded to Imgbb:", imgbbUrl);
+
+    // // ✅ Scrape the website URLs
+    // const scrapedData = await sitemapService.scrapeUrl(websiteUrl);
+
+    // // ✅ Analyze the scraped links with OpenAI
+    // const analysis = await openAIService.determineTargetURLs(scrapedData.links);
+
+    // ✅ Send the Imgbb URL to OpenAI (NOT Base64)
+    const screenshotAnalysis = await openAIService.analyzeScreenshot(imgbbUrl);
+
+    console.log("🔍 Analysis completed:", screenshotAnalysis);
 
     return NextResponse.json({
-      message: 'Analysis completed',
-      scrapedData,
-      analysis,
+      message: "Analysis completed",
+      // scrapedData,
+      // analysis,
       screenshotAnalysis,
-      cloudinaryUrl,
+      imgbbUrl,
     });
   } catch (error) {
+    console.error("❌ Error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? `Error: ${error.message}` : 'Unknown error',
+        error: error instanceof Error ? `Error: ${error.message}` : "Unknown error",
       },
       { status: 500 }
     );

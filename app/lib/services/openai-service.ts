@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ProductData, ProductEmbedding } from '../types/product';
 import { RestrictedItemData } from '../types/restricted';
 
+
 interface URLAnalysis {
   homepage: string;
   product: string;
@@ -29,30 +30,34 @@ export class OpenAIService {
   ): Promise<Record<string, unknown>> {
     try {
       const response = await this.client.chat.completions.create({
-        model: 'gpt-4o', // Replace with the appropriate model
+        model: "gpt-4o-mini",
         messages: [
           {
-            role: 'system',
-            content:
-              'You are an AI analyzing website screenshots for compliance and structure.',
-          },
-          {
-            role: 'user',
-            content: `Analyze this uploaded website screenshot for compliance issues and structure. The screenshot URL is ${screenshotUrl}.`,
+            role: "user",
+            content: [
+              { type: "text", text: "What's in this image?" },
+              {
+                type: "image_url",
+                image_url: {
+                  "url": screenshotUrl,
+                },
+              },
+            ],
           },
         ],
+        store: true,
       });
+
+      console.log('OpenAI response:', response.choices[0]?.message);
 
       const content =
         response.choices[0]?.message?.content ||
         'No insights returned from OpenAI.';
-      try {
-        const parsedResponse = JSON.parse(content);
-        return parsedResponse;
-      } catch (error) {
-        console.error('Failed to parse OpenAI response:', error);
-        throw new Error('OpenAI response was not valid JSON.');
-      }
+
+
+      console.log('OpenAI content:', content);
+
+      return { message: content };
     } catch (error) {
       console.error('Error analyzing screenshot:', error);
       throw error;

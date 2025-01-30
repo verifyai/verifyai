@@ -113,7 +113,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({
-      imageUrl: `/screenshots/${filename}`, // URL path to access the image
+      imageUrl:  `/screenshots/${filename}`,// URL path to access the image
     });
   } catch (error) {
     console.error('Error scraping website:', error);

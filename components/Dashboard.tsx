@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import EventStream from "./EventStream";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+import { Result } from "postcss";
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -14,6 +15,7 @@ export default function Dashboard() {
     description: "",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [websiteAnalysis, setWebsiteAnalysis] = useState(null);
 
   const fetchScreenshot = async () => {
     try {
@@ -32,6 +34,7 @@ export default function Dashboard() {
       });
 
       const data = await response.json();
+      console.log("After fetching screenshot:", data);
       localStorage.setItem("screenshotUrl", data.imageUrl);
       return data.imageUrl;
     } catch (error) {
@@ -43,12 +46,13 @@ export default function Dashboard() {
   const startWebsiteAnalysis = useCallback(async () => {
     try {
       console.log("Starting website analysis...");
+      const screenshotUrlHard = `http://localhost:3000${data.screenshotUrl}`;
       const response = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           websiteUrl: data.websiteUrl,
-          screenshotUrl: data.screenshotUrl, // Pass the local screenshot URL
+          screenshotUrl: screenshotUrlHard, // Pass the local screenshot URL
         }),
       });
   
@@ -57,6 +61,7 @@ export default function Dashboard() {
       }
   
       const result = await response.json();
+      setWebsiteAnalysis(result.screenshotAnalysis.message);
       console.log("Analysis completed:", result);
     } catch (error) {
       console.error("Error analyzing website:", error);
@@ -172,6 +177,14 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+        </div>
+        
+        {/* Website Analysis Card */}
+        <div className="rounded-xl border border-gray-100 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4">
+            <h3 className="font-semibold text-gray-900">Analysis Progress</h3>
+          </div>
+          <div className=" p-6">{websiteAnalysis}</div>
         </div>
 
         {/* Confidence Scores Card */}
