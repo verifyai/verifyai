@@ -62,7 +62,23 @@ export class OpenAIService {
                 Please provide a summary of the website and answers to all of these questions with a confidence score of zero to 100. 
                 Split these into sections.
                 Keep this summary around 150-160 words.
-`,
+
+                Here is an example strcuture:
+
+                Summary of the Website
+                The website appears to be dedicated to athletic clothing and footwear, featuring various Nike products such as running shoes and apparel. It promotes categories like men's, women's, and kids' clothing, indicating a wide range of offerings relevant to athletic activities.
+                Confidence in Nike Ownership
+                **Confidence Score: 90**
+                I am reasonably confident that this website belongs to Nike, as it prominently features Nike branding and product lines.
+                Confidence in Selling Athletic Clothing
+                **Confidence Score: 85**
+                I am confident that the website sells athletic clothing based on its layout and product categories related to running and casual wear.
+                Confidence about Restricted Items
+                **Confidence Score: 95**
+                I am quite confident that this website does not sell restricted items as outlined above. Its focus is on sportswear and athletic gear, which aligns with general regulations on such products.
+
+                Take into account spacing I dont want there to bbe too much. Try to compress it as much as possible.
+              `,  
               },
               {
                 type: 'image_url',

@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import gsap from 'gsap';
 
 export default function Dashboard() {
+  // State to store website data (retrieved from localStorage)
   const [data, setData] = useState({
     screenshotUrl: '',
     websiteUrl: '',
@@ -14,33 +15,34 @@ export default function Dashboard() {
     industry: '',
     description: '',
   });
+
+  // Controls loading state while analysis is running
   const [isLoading, setIsLoading] = useState(true);
+
+  // Stores OpenAI website analysis results
   const [websiteAnalysis, setWebsiteAnalysis] = useState(null);
 
-  // State for confidence scores
+  // Hardcoded confidence scores (these will be dynamic later)
   const confidenceScores = {
     Ownership: 95,
-    Certificates: 85, 
+    Certificates: 85,
+    'No Restricted Items': 83,
     'Product Page': 90,
   };
 
-  // Refs for GSAP animations
+  // Refs for animating elements using GSAP
   const analysisCardRef = useRef(null);
   const confidenceCardRef = useRef(null);
 
+  // Fetches a screenshot of the website, stores it in localStorage, and returns the image URL
   const fetchScreenshot = async () => {
     try {
       const websiteUrl = localStorage.getItem('websiteUrl');
-
-      if (!websiteUrl) {
-        throw new Error('No website URL found in localStorage.');
-      }
+      if (!websiteUrl) throw new Error('No website URL found in localStorage.');
 
       const response = await fetch('/api/screenshot', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: websiteUrl }),
       });
 
@@ -53,10 +55,12 @@ export default function Dashboard() {
     }
   };
 
+  // Sends the website URL and screenshot to the API for analysis, then updates the state
   const startWebsiteAnalysis = useCallback(async () => {
     try {
       console.log('Starting website analysis...');
       const screenshotUrlHard = `http://localhost:3000${data.screenshotUrl}`;
+
       const response = await fetch('/api/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,9 +70,7 @@ export default function Dashboard() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to analyze website');
-      }
+      if (!response.ok) throw new Error('Failed to analyze website');
 
       const result = await response.json();
       setWebsiteAnalysis(result.screenshotAnalysis.message);
@@ -79,10 +81,22 @@ export default function Dashboard() {
     }
   }, [data]);
 
+  // Formats the website analysis message for display
+  const formatWebsiteAnalysis = (analysis) => {
+    if (!analysis) return '';
+  
+    return analysis
+      .replace(/###\s*(.*?)/g, '<h3 class="text-lg font-semibold mt-4">$1</h3>') // Convert ### Headings to Styled Headings
+      .replace(/- \*\*(.*?):\*\* (\d+\/\d+)/g, '<p class="mt-2"><strong>$1:</strong> $2</p>') // Bold key-value pairs
+      .replace(/- /g, '<li class="mt-1 text-gray-700">') // Convert list items
+      .replace(/\n/g, '<br/>'); // Convert new lines to HTML breaks
+  };
+  
+
+  // Initializes data when the component mounts (fetches website info and screenshot)
   useEffect(() => {
     const initializeData = async () => {
       const screenshotUrl = await fetchScreenshot();
-
       setData({
         screenshotUrl: screenshotUrl || '',
         websiteUrl: localStorage.getItem('websiteUrl') || '',
@@ -95,20 +109,20 @@ export default function Dashboard() {
     initializeData();
   }, []);
 
+  // Starts website analysis once all necessary data is available
   useEffect(() => {
-    const isDataComplete = Object.values(data).every((value) => value);
-    if (isDataComplete) {
+    if (Object.values(data).every((value) => value)) {
       startWebsiteAnalysis();
     }
   }, [data, startWebsiteAnalysis]);
 
+  // Animates elements when loading completes
   useEffect(() => {
     if (!isLoading) {
-      // GSAP Animation: Fade & Slide in from Right
       gsap.fromTo(
         [analysisCardRef.current, confidenceCardRef.current],
-        { opacity: 0, x: 50 }, // Start hidden, pushed right
-        { opacity: 1, x: 0, duration: 0.6, stagger: 0.2, ease: 'power2.out' } // Slide in smoothly
+        { opacity: 0, x: 50 },
+        { opacity: 1, x: 0, duration: 0.6, stagger: 0.2, ease: 'power2.out' }
       );
     }
   }, [isLoading]);
@@ -197,14 +211,11 @@ export default function Dashboard() {
         {!isLoading && (
           <>
             {/* Website Analysis Card */}
-            <div
-              ref={analysisCardRef}
-              className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0"
-            >
+            <div ref={analysisCardRef} className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0">
               <div className="border-b border-gray-200 px-5 py-4">
                 <h3 className="font-semibold text-gray-900">OpenAI Analysis</h3>
               </div>
-              <div className="p-6">{websiteAnalysis}</div>
+              <div className="p-6 text-sm text-gray-800" dangerouslySetInnerHTML={{ __html: formatWebsiteAnalysis(websiteAnalysis) }} />
             </div>
 
             {/* Confidence Scores Card */}
