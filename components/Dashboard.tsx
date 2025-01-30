@@ -20,8 +20,7 @@ export default function Dashboard() {
   // State for confidence scores
   const confidenceScores = {
     Ownership: 95,
-    Certificates: 85,
-    Restrictions: 65,
+    Certificates: 85, 
     'Product Page': 90,
   };
 
