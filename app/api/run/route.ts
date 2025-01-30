@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { openAIService } from "@/app/lib/services/openai-service";
 import { uploadToImgbb } from "@/app/lib/services/imgbb-service"; // ✅ Import Imgbb uploader
+import { broadcastAlert } from '@/app/lib/eventEmitter';
 
 export async function POST(request: Request) {
   try {
@@ -21,9 +22,21 @@ export async function POST(request: Request) {
     // ✅ Upload to Imgbb without resizing
     const imgbbUrl = await uploadToImgbb(Buffer.from(imageBuffer));
 
+    broadcastAlert({
+      type: 'ImgBB',
+      message: `Screenshot uploaded to the web`,
+      timestamp: Date.now(),
+    }); 
+    
     console.log("✅ Image uploaded to Imgbb:", imgbbUrl);
 
     // ✅ Send the Imgbb URL to OpenAI (NOT Base64)
+
+    broadcastAlert({
+      type: 'OpenAI',
+      message: `Sending screenshot to OpenAI`,
+      timestamp: Date.now(),
+    }); 
     const screenshotAnalysis = await openAIService.analyzeScreenshot(imgbbUrl);
 
     console.log("🔍 Analysis completed:", screenshotAnalysis);
