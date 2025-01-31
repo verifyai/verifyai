@@ -102,6 +102,13 @@ export default function Dashboard() {
       console.error('Error analyzing website:', error);
     }
   }, [data]);
+ 
+  const getColorClass = (score: number) => {
+    if (score < 70) return 'bg-red-600';
+    if (score >= 70 && score <= 85) return 'bg-yellow-600';
+    return 'bg-green-600';
+  };
+  
 
   // Initializes data when the component mounts (fetches website info and screenshot)
   useEffect(() => {
@@ -266,7 +273,7 @@ export default function Dashboard() {
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
+                        className={`h-full rounded-full ${getColorClass(score)}`}
                         style={{ width: `${score}%` }}
                       />
                     </div>
