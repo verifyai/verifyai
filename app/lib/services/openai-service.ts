@@ -58,25 +58,38 @@ export class OpenAIService {
                 Transactions that disclose the personal information of third parties in violation of applicable law
                 Transactions related to cloud mining
 
-                How confident are you that this is the case?
+                How confident are you that:
 
-                Please provide a summary of the website and answers to all of these questions with a confidence score of zero to 100. 
-                Split these into sections.
-                Keep this summary around 150-160 words.
+                1. The website does not sell any restricted items
+                2. The website has product pages
+                3. The website is owned by Nike
+                4. The website is safe overall
 
-                Here is an example structure:
 
-                Confidence in Nike Ownership
-                **Confidence Score: 90**
-                I am reasonably confident that this website belongs to Nike, as it prominently features Nike branding and product lines.
-                Confidence in Selling Athletic Clothing
-                **Confidence Score: 85**
-                I am confident that the website sells athletic clothing based on its layout and product categories related to running and casual wear.
-                Confidence about Restricted Items
-                **Confidence Score: 95**
-                I am quite confident that this website does not sell restricted items as outlined above. Its focus is on sportswear and athletic gear, which aligns with general regulations on such products.
+                You should return a JSON object with this strucutre with no additional text and no markdown and no back ticks. Just the json object as I need to parse it as JSON.
 
-                Take into account spacing. I dont want there to be too much spacing and for it to take up as less space vertically as possible.
+                {
+                  "score": (overall score as an average of the 4 scores),
+                  "metadata": {
+                    "summary": "(Summary of the website. Should summarize the findings of the scores below and provide a general overview of the website. Should be about 7-9 sentences)",
+                    "restrictedItems": {
+                      "score": (confidence score),
+                      "message": (summary of restricted items check)"
+                    },
+                    "productPages": {
+                      "score": (confidence score),
+                      "message": "(summary of product page check)"
+                    },
+                    "ownership": {
+                      "score": (confidence score),
+                      "message": "(summary of ownership check)"
+                    },
+                    "overallSafety": {
+                      "score": (confidence score),
+                      "message": "(summary of overall safety)"
+                    }
+                  }
+                }
               `,
               },
               {

@@ -19,33 +19,57 @@ export async function POST(request: Request) {
 
     const imageBuffer = await response.arrayBuffer();
 
-    // ✅ Upload to Imgbb without resizing
+    // ✅ Upload to Imgbb
     const imgbbUrl = await uploadToImgbb(Buffer.from(imageBuffer));
 
     broadcastAlert({
-        type: 'ImgBB',
-        message: `Screenshot uploaded to the web`,
-        timestamp: Date.now(),
-      }); 
-    
+      type: 'ImgBB',
+      message: `Screenshot uploaded to the web`,
+      timestamp: Date.now(),
+    });
+
     console.log("✅ Image uploaded to Imgbb:", imgbbUrl);
 
-    // ✅ Send the Imgbb URL to OpenAI (NOT Base64)
-
+    // ✅ Send the Imgbb URL to OpenAI
     broadcastAlert({
       type: 'OpenAI',
       message: `Sending screenshot to OpenAI`,
       timestamp: Date.now(),
-    }); 
-    const screenshotAnalysis = await openAIService.analyzeScreenshot(imgbbUrl);
+    });
 
-    console.log("🔍 Analysis completed:", screenshotAnalysis);
+    const openAIResponse = await openAIService.analyzeScreenshot(imgbbUrl);
+
+    console.log("🔍 Raw OpenAI Response:", openAIResponse);
+
+    // ✅ Parse the `message` property (which contains the JSON as a string)
+    let parsedMessage;
+    try {
+      parsedMessage = JSON.parse(openAIResponse.message as string);
+    } catch (parseError) {
+      console.error("❌ Error parsing OpenAI message:", parseError);
+      throw new Error("Failed to parse OpenAI response message.");
+    }
+
+    console.log("✅ Parsed OpenAI Message:", parsedMessage);
+
+    // ✅ Ensure the parsed response follows the expected structure
+    const screenshotAnalysis = {
+      score: parsedMessage.score ?? 0,
+      metadata: {
+        summary: parsedMessage.metadata?.summary ?? "No summary available.",
+        restrictedItems: parsedMessage.metadata?.restrictedItems ?? { score: 0, message: "No data available." },
+        productPages: parsedMessage.metadata?.productPages ?? { score: 0, message: "No data available." },
+        ownership: parsedMessage.metadata?.ownership ?? { score: 0, message: "No data available." },
+        overallSafety: parsedMessage.metadata?.overallSafety ?? { score: 0, message: "No data available." },
+      },
+    };
 
     return NextResponse.json({
       message: "Analysis completed",
-      screenshotAnalysis,
+      screenshotAnalysis, // ✅ Pass the parsed and structured response
       imgbbUrl,
     });
+
   } catch (error) {
     console.error("❌ Error:", error);
     return NextResponse.json(
@@ -56,3 +80,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+
