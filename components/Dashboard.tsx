@@ -20,15 +20,24 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Stores OpenAI website analysis results
-  const [websiteAnalysis, setWebsiteAnalysis] = useState<string>('');
+  const [analysisSummary, setAnalysisSummary] = useState<string>('Fetching analysis...');
+  const [analysisScores, setAnalysisScores] = useState({
+    overallScore: 0,
+    restrictedItems: { score: 0, message: '' },
+    productPages: { score: 0, message: '' },
+    ownership: { score: 0, message: '' },
+    overallSafety: { score: 0, message: '' },
+  });
 
-  // Hardcoded confidence scores (these will be dynamic later)
+  // Hardcoded confidence scores as fallback
   const confidenceScores = {
-    Ownership: 95,
-    Certificates: 85,
-    'No Restricted Items': 83,
-    'Product Page': 90,
+    Ownership: analysisScores.ownership.score || 95,
+    'No Restricted Items': analysisScores.restrictedItems.score || 83,
+    'Product Page': analysisScores.productPages.score || 90,
+    'Overall Safety': analysisScores.overallSafety.score || 85,
   };
+
+  const overallScore = analysisScores.overallScore || 87; // Default score
 
   // Refs for animating elements using GSAP
   const analysisCardRef = useRef(null);
@@ -73,27 +82,26 @@ export default function Dashboard() {
       if (!response.ok) throw new Error('Failed to analyze website');
 
       const result = await response.json();
-      setWebsiteAnalysis(result.screenshotAnalysis.message);
+
+      console.log('Full API Response:', result);
+
+      // Extract and update the summary
+      setAnalysisSummary(result.screenshotAnalysis.metadata.summary || 'No summary available.');
+
+      // Store confidence scores from OpenAI response
+      setAnalysisScores({
+        overallScore: result.screenshotAnalysis.score || 0,
+        restrictedItems: result.screenshotAnalysis.metadata.restrictedItems || { score: 0, message: '' },
+        productPages: result.screenshotAnalysis.metadata.productPages || { score: 0, message: '' },
+        ownership: result.screenshotAnalysis.metadata.ownership || { score: 0, message: '' },
+        overallSafety: result.screenshotAnalysis.metadata.overallSafety || { score: 0, message: '' },
+      });
+
       setIsLoading(false);
-      console.log('Analysis completed:', result);
     } catch (error) {
       console.error('Error analyzing website:', error);
     }
   }, [data]);
-
-  // Formats the website analysis message for display
-  const formatWebsiteAnalysis = (analysis: string) => {
-    if (!analysis) return '';
-
-    return analysis
-      .replace(/###\s*(.*?)/g, '<h3 class="text-lg font-semibold mt-4">$1</h3>') // Convert ### Headings to Styled Headings
-      .replace(
-        /- \*\*(.*?):\*\* (\d+\/\d+)/g,
-        '<p class="mt-2"><strong>$1:</strong> $2</p>'
-      ) // Bold key-value pairs
-      .replace(/- /g, '<li class="mt-1 text-gray-700">') // Convert list items
-      .replace(/\n/g, '<br/>'); // Convert new lines to HTML breaks
-  };
 
   // Initializes data when the component mounts (fetches website info and screenshot)
   useEffect(() => {
@@ -220,42 +228,41 @@ export default function Dashboard() {
         {!isLoading && (
           <>
             {/* Website Analysis Card */}
-            <div
-              ref={analysisCardRef}
-              className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0"
-            >
+            <div ref={analysisCardRef} className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0">
               <div className="border-b border-gray-200 px-5 py-4">
                 <h3 className="font-semibold text-gray-900">OpenAI Analysis</h3>
               </div>
-              <div
-                className="-mt-6 p-6 text-sm text-gray-800"
-                dangerouslySetInnerHTML={{
-                  __html: formatWebsiteAnalysis(websiteAnalysis || ''),
-                }}
-              />
+              <div className="p-6 text-gray-800 text-sm">
+                {analysisSummary}
+              </div>
             </div>
 
             {/* Confidence Scores Card */}
-            <div
-              ref={confidenceCardRef}
-              className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0"
-            >
+            <div ref={confidenceCardRef} className="rounded-xl border border-gray-300 bg-white shadow-sm opacity-0">
               <div className="border-b border-gray-200 px-5 py-4">
-                <h3 className="font-semibold text-gray-900">
-                  Confidence Scores
-                </h3>
+                <h3 className="font-semibold text-gray-900">Confidence Scores</h3>
               </div>
               <div className="space-y-6 p-5">
-                {/* Static Confidence Score Display */}
+                {/* Overall Score Bar */}
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">Overall Score</span>
+                    <span className="text-sm font-medium text-gray-900">{overallScore}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-green-500 to-blue-600"
+                      style={{ width: `${overallScore}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Individual Confidence Scores */}
                 {Object.entries(confidenceScores).map(([label, score]) => (
                   <div key={label}>
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">
-                        {label}
-                      </span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {score}%
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">{label}</span>
+                      <span className="text-sm font-medium text-gray-900">{score}%</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                       <div
