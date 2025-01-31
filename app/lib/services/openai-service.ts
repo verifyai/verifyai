@@ -73,15 +73,15 @@ export class OpenAIService {
                   "metadata": {
                     "summary": "(Summary of the website. Should summarize the findings of the scores below and provide a general overview of the website. Should be about 7-9 sentences)",
                     "restrictedItems": {
-                      "score": (confidence score),
+                      "score": (confidence score 1-100),
                       "message": (summary of restricted items check)"
                     },
                     "productPages": {
-                      "score": (confidence score),
+                      "score": (confidence score 1-100),
                       "message": "(summary of product page check)"
                     },
                     "ownership": {
-                      "score": (confidence score),
+                      "score": (confidence score 1-100),
                       "message": "(summary of ownership check)"
                     },
                     "overallSafety": {
@@ -105,10 +105,10 @@ export class OpenAIService {
       });
 
       broadcastAlert({
-            type: 'OpenAI',
-            message: `Connected to OpenAI`,
-            timestamp: Date.now(),
-          }); 
+        type: 'OpenAI',
+        message: `Connected to OpenAI`,
+        timestamp: Date.now(),
+      });
 
       console.log('OpenAI response:', response.choices[0]?.message);
 
@@ -116,11 +116,11 @@ export class OpenAIService {
         response.choices[0]?.message?.content ||
         'No insights returned from OpenAI.';
 
-        broadcastAlert({
-          type: 'OpenAI',
-          message: `OpenAI response recorded`,
-          timestamp: Date.now(),
-        }); 
+      broadcastAlert({
+        type: 'OpenAI',
+        message: `OpenAI response recorded`,
+        timestamp: Date.now(),
+      });
 
       console.log('OpenAI content:', content);
 
