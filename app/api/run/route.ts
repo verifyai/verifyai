@@ -39,8 +39,6 @@ export async function POST(request: Request) {
 
     const openAIResponse = await openAIService.analyzeScreenshot(imgbbUrl);
 
-    console.log("🔍 Raw OpenAI Response:", openAIResponse);
-
     // ✅ Parse the `message` property (which contains the JSON as a string)
     let parsedMessage;
     try {
