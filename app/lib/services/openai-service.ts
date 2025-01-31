@@ -71,7 +71,7 @@ export class OpenAIService {
                 {
                   "score": (overall score as an average of the 4 scores),
                   "metadata": {
-                    "summary": "(Summary of the website. Should summarize the findings of the scores below and provide a general overview of the website. Should be about 7-9 sentences)",
+                    "summary": "(Summary of the website. Should summarize the findings of the scores below and provide a general overview of the website. Should be about 9-12 sentences)",
                     "restrictedItems": {
                       "score": (confidence score 1-100),
                       "message": (summary of restricted items check)"
