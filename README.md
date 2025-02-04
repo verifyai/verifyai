@@ -30,12 +30,12 @@ Compliance officers spend a significant amount of time manually verifying mercha
 - Recommend third-party internal verification for enhanced accuracy.
 
 ## Tech Stack
-- **Frontend:** React (for dashboard, if applicable)
+- **Frontend:** React
 - **Backend:** Node.js / Express
-- **Web Scraping:** Puppeteer / Playwright / Cheerio
-- **AI Models:** OpenAI API / Custom NLP Model
-- **Database:** PostgreSQL / MongoDB
-- **Hosting & Deployment:** AWS / Vercel
+- **Web Scraping:** Puppeteer
+- **AI Models:** OpenAI API
+- **Database:** PostgreSQL / MongoDB / ImgBB / Pinecone
+- **Hosting & Deployment:** Vercel
 
 ## Setup Instructions
 1. Clone the repository:
