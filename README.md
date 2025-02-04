@@ -66,12 +66,13 @@ Compliance officers spend a significant amount of time manually verifying mercha
 
 ---
 
-## Maintainers:
-- Tanner Lyon - FE/BE
-- Jesse Chou - FE/BE
-- Kiril Christov - FE/BE
-- Taven Shumaker - FE/BE
-- Ian Mann - FE/BE
+## Contributors:
+- Ian Mann
+- Tanner Lyon
+- Jesse Chou
+- Kiril Christov
+- Taven Shumaker
+
 
 # Diagrams
 
