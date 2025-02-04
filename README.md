@@ -1,6 +1,5 @@
-**A note to Will**
 
-Hey Will! Thanks for taking a look at our project. The project isn't a working MVP at this point, we spent the first day with each team member doing discovery on a different path forward to arrive at our current MVP and strech goals. We have parts of the whole at this point but haven't combined them together.
+![VerifyAI Big Logo](https://github.com/user-attachments/assets/0cf4eed5-d248-43b7-9bce-7bdc4822e29f)
 
 # Project Brief
 
