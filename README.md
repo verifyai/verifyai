@@ -1,38 +1,72 @@
 
 ![VerifyAI Big Logo](https://github.com/user-attachments/assets/0cf4eed5-d248-43b7-9bce-7bdc4822e29f)
 
-# Project Brief
+# AI-Powered Merchant Compliance Checker
 
-**1. What is the problem you’re solving?**
-* Checking merchant websites as part of compliance onboarding is a manual and time consuming
-* Product in few words: AI assistance for compliance officers to validate merchant websites
+## Overview
+Merchant website compliance checks are often time-consuming and require manual effort. This project aims to streamline the process by leveraging AI to scrape merchant websites, validate their legitimacy, and ensure they comply with product restrictions. 
 
-**2. What is the solution?**
-Web scraping to collect relevant information from merchant websites.
-AI-powered analysis to verify legitimacy and product offerings.
-Scoring system to compare automated results with human evaluations.
-Actionable recommendations to assist compliance officers.
+## Problem Statement
+Compliance officers spend a significant amount of time manually verifying merchant websites during onboarding. This project provides AI assistance to automate and enhance this process.
+
+## Solution
+- **Web Scraping:** Extract relevant information from merchant websites.
+- **AI-Powered Analysis:** Validate legitimacy, verify product offerings, and detect restricted products.
+- **Scoring System:** Compare automated results with human evaluations.
+- **Actionable Recommendations:** Assist compliance officers with decision-making.
+
+## Features (MVP Scope)
+- Scrape websites for legitimacy signals.
+- Verify ownership of a website against a specified merchant.
+- Confirm that products are being sold.
+- Detect restricted products (requiring human verification for final approval).
+
+## Technical Challenges
+- Ensuring AI successfully extracts relevant compliance-related information.
+- Generating a confidence score for compliance checks.
+
+## Stretch Goals
+- Provide a verification score to compare with human evaluations.
+- Recommend third-party internal verification for enhanced accuracy.
+
+## Tech Stack
+- **Frontend:** React (for dashboard, if applicable)
+- **Backend:** Node.js / Express
+- **Web Scraping:** Puppeteer / Playwright / Cheerio
+- **AI Models:** OpenAI API / Custom NLP Model
+- **Database:** PostgreSQL / MongoDB
+- **Hosting & Deployment:** AWS / Vercel
+
+## Setup Instructions
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/ai-compliance-checker.git
+   cd ai-compliance-checker
+   ```
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Set up environment variables (e.g., API keys, database credentials) in a `.env` file:
+   ```env
+   OPENAI_API_KEY=your-api-key
+   DATABASE_URL=your-database-url
+   ```
+4. Run the project:
+   ```sh
+   npm start
+   ```
+
+## Contributing
+1. Fork the repository.
+2. Create a new branch (`feature-branch`).
+3. Commit your changes.
+4. Open a pull request.
 
 
-**3. What is the MVP scope? (core features you must get working)**
-Scrape website for legitimacy
-Verify ownership of website belongs to specified merchant 
-Verify products are being sold
-Verify restricted products are not being sold (blind for human until human verification given)
+---
 
-**4. What are the tough technical challenges involved with solving this problem?**
-Getting the AI to successfully grab relevant information from the websites
-Getting AI to generate confidence score 
-
-**5. What are the stretch goals?**
-Give verification score to compare with human score 
-Recommend 3rd party internal verification
-Host on cloud
-Make Millions
-
-**6. What is the technology stack?**
-Next.js (FE + BE), Typescript, Supabase Postgres, OpenAI API, 
-Team Responsibility breakdown: Who’s working on which part?
+**Maintainers:**
 Tanner Lyon - FE/BE
 Jesse Chou - FE/BE
 Kiril Christov - FE/BE
