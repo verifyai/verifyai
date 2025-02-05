@@ -40,8 +40,8 @@ Compliance officers spend a significant amount of time manually verifying mercha
 ## Setup Instructions
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/ai-compliance-checker.git
-   cd ai-compliance-checker
+   git clone https://github.com/verifyai/VerifyAI
+   cd VerifyAI
    ```
 2. Install dependencies:
    ```sh
@@ -50,6 +50,7 @@ Compliance officers spend a significant amount of time manually verifying mercha
 3. Set up environment variables (e.g., API keys, database credentials) in a `.env` file:
    ```env
    OPENAI_API_KEY=your-api-key
+   ImgBB_API_KEY=your-api-key
    DATABASE_URL=your-database-url
    ```
 4. Run the project:
