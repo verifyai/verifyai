@@ -34,13 +34,13 @@ export default function Dashboard() {
 
   // Hardcoded confidence scores as fallback
   const confidenceScores = {
-    Ownership: analysisScores.ownership.score || 'N/A',
-    'No Restricted Items': analysisScores.restrictedItems.score || 'N/A',
-    'Product Page': analysisScores.productPages.score || 'N/A',
-    'Overall Safety': analysisScores.overallSafety.score || 'N/A',
+    Ownership: analysisScores.ownership.score || 0,
+    'No Restricted Items': analysisScores.restrictedItems.score || 0,
+    'Product Page': analysisScores.productPages.score || 0,
+    'Overall Safety': analysisScores.overallSafety.score || 0,
   };
 
-  const overallScore = analysisScores.overallScore || 'N/A'; // Default score
+  const overallScore = analysisScores.overallScore || 0; // Default score
 
   // Refs for animating elements using GSAP
   const analysisCardRef = useRef(null);
