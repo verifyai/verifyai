@@ -10,11 +10,14 @@ type Industry = {
 };
 
 async function submitForm(prevState: { success: boolean }, formData: FormData) {
-  // Save to localStorage (though normally you'd submit to a server here)
+  // Save entered details
   localStorage.setItem("websiteUrl", formData.get("url") as string);
   localStorage.setItem("businessName", formData.get("businessName") as string);
   localStorage.setItem("industry", formData.get("industry") as string);
   localStorage.setItem("description", formData.get("description") as string);
+
+  // Ensure session flag is set before redirecting
+  sessionStorage.setItem("fromStartPage", "true");
 
   return { success: true };
 }
