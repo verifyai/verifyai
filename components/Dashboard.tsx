@@ -19,6 +19,9 @@ export default function Dashboard() {
   // Controls loading state while analysis is running
   const [isLoading, setIsLoading] = useState(true);
 
+  // For cancelling the loading
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
+
   // Stores OpenAI website analysis results
   const [analysisSummary, setAnalysisSummary] = useState<string>('Fetching analysis...');
   const [analysisScores, setAnalysisScores] = useState({
@@ -31,13 +34,13 @@ export default function Dashboard() {
 
   // Hardcoded confidence scores as fallback
   const confidenceScores = {
-    Ownership: analysisScores.ownership.score || 95,
-    'No Restricted Items': analysisScores.restrictedItems.score || 83,
-    'Product Page': analysisScores.productPages.score || 90,
-    'Overall Safety': analysisScores.overallSafety.score || 85,
+    Ownership: analysisScores.ownership.score || 'N/A',
+    'No Restricted Items': analysisScores.restrictedItems.score || 'N/A',
+    'Product Page': analysisScores.productPages.score || 'N/A',
+    'Overall Safety': analysisScores.overallSafety.score || 'N/A',
   };
 
-  const overallScore = analysisScores.overallScore || 87; // Default score
+  const overallScore = analysisScores.overallScore || 'N/A'; // Default score
 
   // Refs for animating elements using GSAP
   const analysisCardRef = useRef(null);
@@ -46,62 +49,94 @@ export default function Dashboard() {
   // Fetches a screenshot of the website, stores it in localStorage, and returns the image URL
   const fetchScreenshot = async () => {
     try {
-      const websiteUrl = localStorage.getItem('websiteUrl');
-      if (!websiteUrl) throw new Error('No website URL found in localStorage.');
-
+      const websiteUrl = localStorage.getItem("websiteUrl");
+      const fromStartPage = sessionStorage.getItem("fromStartPage") === "true";
+  
+      // Only fetch a new screenshot if user just came from Start Page
+      if (!fromStartPage) {
+        console.log("Not from Start Page. Skipping screenshot fetch.");
+        return localStorage.getItem("screenshotUrl");
+      }
+  
+      if (!websiteUrl) throw new Error("No website URL found in localStorage.");
+  
       const response = await fetch('/api/screenshot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: websiteUrl }),
       });
-
+  
       const data = await response.json();
-      localStorage.setItem('screenshotUrl', data.imageUrl);
+      localStorage.setItem("screenshotUrl", data.imageUrl);
       return data.imageUrl;
     } catch (error) {
-      console.error('Error during loading:', error);
+      console.error("Error during loading:", error);
       return null;
     }
   };
+  
 
   // Sends the website URL and screenshot to the API for analysis, then updates the state
   const startWebsiteAnalysis = useCallback(async () => {
     try {
-      console.log('Starting website analysis...');
+      console.log("Starting website analysis...");
+  
+      // Create a new AbortController for this request
+      const controller = new AbortController();
+      setAbortController(controller);
+  
       const screenshotUrlHard = `http://localhost:3000${data.screenshotUrl}`;
-
-      const response = await fetch('/api/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+  
+      const response = await fetch("/api/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           websiteUrl: data.websiteUrl,
           screenshotUrl: screenshotUrlHard,
         }),
+        signal: controller.signal, // Attach the abort signal
       });
-
-      if (!response.ok) throw new Error('Failed to analyze website');
-
+  
+      if (!response.ok) throw new Error("Failed to analyze website");
+  
       const result = await response.json();
-
-      console.log('Full API Response:', result);
-
+      console.log("Full API Response:", result);
+  
+      // Store results in localStorage so they persist
+      localStorage.setItem("lastAnalysis", JSON.stringify(result));
+  
       // Extract and update the summary
-      setAnalysisSummary(result.screenshotAnalysis.metadata.summary || 'No summary available.');
-
+      setAnalysisSummary(result.screenshotAnalysis.metadata.summary || "No summary available.");
+  
       // Store confidence scores from OpenAI response
       setAnalysisScores({
         overallScore: result.screenshotAnalysis.score || 0,
-        restrictedItems: result.screenshotAnalysis.metadata.restrictedItems || { score: 0, message: '' },
-        productPages: result.screenshotAnalysis.metadata.productPages || { score: 0, message: '' },
-        ownership: result.screenshotAnalysis.metadata.ownership || { score: 0, message: '' },
-        overallSafety: result.screenshotAnalysis.metadata.overallSafety || { score: 0, message: '' },
+        restrictedItems: result.screenshotAnalysis.metadata.restrictedItems || { score: 0, message: "" },
+        productPages: result.screenshotAnalysis.metadata.productPages || { score: 0, message: "" },
+        ownership: result.screenshotAnalysis.metadata.ownership || { score: 0, message: "" },
+        overallSafety: result.screenshotAnalysis.metadata.overallSafety || { score: 0, message: "" },
       });
-
+  
       setIsLoading(false);
     } catch (error) {
-      console.error('Error analyzing website:', error);
+      if (error.name === "AbortError") {
+        console.log("Analysis request was canceled.");
+      } else {
+        console.error("Error analyzing website:", error);
+      }
+      setIsLoading(false);
     }
   }, [data]);
+  
+  const cancelLoading = () => {
+    if (abortController) {
+      abortController.abort(); // Cancel the fetch request
+      setAbortController(null); // Reset the abortController state
+    }
+    setIsLoading(false); // Stop loading UI
+    setAnalysisSummary("Analysis was canceled.");
+  };  
+  
  
   const getColorClass = (score: number) => {
     if (score < 70) return 'bg-red-600';
@@ -114,24 +149,56 @@ export default function Dashboard() {
   useEffect(() => {
     const initializeData = async () => {
       const screenshotUrl = await fetchScreenshot();
-      setData({
-        screenshotUrl: screenshotUrl || '',
-        websiteUrl: localStorage.getItem('websiteUrl') || '',
-        businessName: localStorage.getItem('businessName') || '',
-        industry: localStorage.getItem('industry') || '',
-        description: localStorage.getItem('description') || '',
-      });
+      
+      const newData = {
+        screenshotUrl: screenshotUrl || "",
+        websiteUrl: localStorage.getItem("websiteUrl") || "",
+        businessName: localStorage.getItem("businessName") || "",
+        industry: localStorage.getItem("industry") || "",
+        description: localStorage.getItem("description") || "",
+      };
+  
+      setData(newData);
     };
-
+  
     initializeData();
-  }, []);
+  }, []); // Removed dependencies so this only runs once when component mounts
+  
 
   // Starts website analysis once all necessary data is available
   useEffect(() => {
-    if (Object.values(data).every((value) => value)) {
+    const fromStartPage = sessionStorage.getItem("fromStartPage") === "true";
+    console.log("From Start Page:", fromStartPage); // Debugging
+  
+    // Load previous analysis if available
+    const savedAnalysis = localStorage.getItem("lastAnalysis");
+    if (savedAnalysis) {
+      const parsedAnalysis = JSON.parse(savedAnalysis);
+      setAnalysisSummary(parsedAnalysis.screenshotAnalysis.metadata.summary || "No summary available.");
+      setAnalysisScores({
+        overallScore: parsedAnalysis.screenshotAnalysis.score || 0,
+        restrictedItems: parsedAnalysis.screenshotAnalysis.metadata.restrictedItems || { score: 0, message: "" },
+        productPages: parsedAnalysis.screenshotAnalysis.metadata.productPages || { score: 0, message: "" },
+        ownership: parsedAnalysis.screenshotAnalysis.metadata.ownership || { score: 0, message: "" },
+        overallSafety: parsedAnalysis.screenshotAnalysis.metadata.overallSafety || { score: 0, message: "" },
+      });
+  
+      setIsLoading(false);
+    }
+  
+    // If user is coming from the Start Page, trigger new analysis
+    if (fromStartPage && Object.values(data).every((value) => value)) {
+      console.log("Starting new analysis...");
       startWebsiteAnalysis();
+      
+      // Remove the flag only after the analysis starts
+      sessionStorage.removeItem("fromStartPage");
+    } else {
+      console.log("Not from Start Page. Skipping analysis.");
     }
   }, [data, startWebsiteAnalysis]);
+  
+  
 
   // Animates elements when loading completes
   useEffect(() => {
@@ -219,8 +286,14 @@ export default function Dashboard() {
         {/* Analysis Progress (Only visible while loading) */}
         {isLoading && (
           <div className="rounded-xl border border-gray-300 bg-white shadow-sm h-[715px]">
-            <div className="border-b border-gray-200 px-5 py-4">
+            <div className="border-b border-gray-200 px-5 py-4 flex justify-between">
               <h3 className="font-semibold text-gray-900">Analysis Progress</h3>
+              <button
+                onClick={cancelLoading}
+                className="text-sm text-red-600 hover:text-red-800"
+              >
+                Cancel
+              </button>
             </div>
             <div className="p-5">
               <EventStream />
